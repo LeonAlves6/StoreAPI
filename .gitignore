@@ -1,0 +1,22 @@
+venv/
+env/
+
+.env
+
+db.sqlite3
+
+__pycache__/
+*.py[cod]
+*.pyo
+
+media/
+staticfiles/
+
+Thumbs.db        # Windows
+
+.vscode/
+
+.coverage
+htmlcov/
+
+*.log
