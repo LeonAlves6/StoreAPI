@@ -3,7 +3,12 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
-from .serializers import RegisterSerializer, LoginSerializer
+from users.models import User
+from .serializers import RegisterSerializer, LoginSerializer, ForgotPasswordSerializer, ResetPasswordSerializer
+from django.core.mail import send_mail
+from django.utils import timezone
+from datetime import timedelta
+import secrets
 
 class RegisterView(APIView):
     def post(self, request):
@@ -41,4 +46,69 @@ class LoginView(APIView):
                 'refresh': str(refresh),
             }, status=status.HTTP_200_OK)
         
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class ForgotPasswordView(APIView):
+    def post(self, request):
+        serializer = ForgotPasswordSerializer(data=request.data)
+        if serializer.is_valid():
+            email = serializer.validated_data['email']
+
+            # por segurança, sempre retorna a mesma mensagem
+            response_message = {'message': 'Se o email estiver cadastrado, você receberá um link de redefinição'}
+
+            try:
+                user = User.objects.get(email=email)
+            except User.DoesNotExist:
+                return Response(response_message, status=status.HTTP_200_OK)
+            
+            token = secrets.token_urlsafe(32)
+            user.reset_token = token
+            user.reset_token_expires = timezone.now() + timedelta(hours=1)
+            user.save()
+
+            send_mail(
+                subject='Redefinição de senha',
+                message=f'Use o token abaixo para redefinir sua senha:\n\n{token}\n\nO token expira em 1 hora.',
+                from_email='noreply@newstyle.com',
+                recipient_list=[email],
+            )
+
+            return Response(response_message, status=status.HTTP_200_OK)
+    
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+class ResetPasswordView(APIView):
+    def post(self, request):
+        serializer = ResetPasswordSerializer(data=request.data)
+        if serializer.is_valid():
+            token = serializer.validated_data['token']
+            password = serializer.validated_data['password']
+
+            try:
+                user = User.objects.get(reset_token=token)
+            except User.DoesNotExist:
+                return Response(
+                    {'error': 'Token inválido'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            # verifica se o token expirou
+            if user.reset_token_expires < timezone.now():
+                return Response(
+                    {'error': 'Token expirado'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            # atualiza a senha e invalida o token
+            user.set_password(password)
+            user.reset_token = None
+            user.reset_token_expires = None
+            user.save()
+
+            return Response(
+                {'message': 'Senha redefinida com sucesso'},
+                status=status.HTTP_200_OK
+            )
+
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
