@@ -34,6 +34,7 @@ INSTALLED_APPS = [
     'django_filters',
     'anymail',
     'users',
+    'products',
 ]
 
 #desenvolvimento
