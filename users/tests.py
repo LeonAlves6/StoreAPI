@@ -19,7 +19,6 @@ class AuthTests(TestCase):
     
     def test_register_success(self):
         response = self.client.post(self.register_url, self.user_data, format='json')
-        print(response.data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(response.data['user']['email'], 'joao@email.com')
 
@@ -76,4 +75,25 @@ class AuthTests(TestCase):
         data = self.user_data.copy()
         data['phone'] = '123'
         response = self.client.post(self.register_url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_forgot_password_valid_email(self):
+        self.client.post(self.register_url, self.user_data, format='json')
+        response = self.client.post('/auth/forgot-password/', {
+            'email': 'joao@email.com'
+        }, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_forgot_password_invalid_email(self):
+        # mesmo email inválido deve retornar 200 por segurança
+        response = self.client.post('/auth/forgot-password/', {
+            'email': 'naoexiste@email.com'
+        }, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_reset_password_invalid_token(self):
+        response = self.client.post('/auth/reset-password/', {
+            'token': 'token_invalido',
+            'password': 'NovaSenha@123'
+        }, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)

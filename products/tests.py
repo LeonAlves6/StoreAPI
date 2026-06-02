@@ -1,7 +1,7 @@
 from django.test import TestCase
 from rest_framework.test import APIClient
 from rest_framework import status
-from .models import Category, Product, Variation
+from .models import Category, Product
 from users.models import User
 
 class ProductTests(TestCase):
@@ -124,7 +124,8 @@ class ProductTests(TestCase):
         self.authenticate_as_seller()
         response = self.client.get(self.products_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-
+        self.assertEqual(len(response.data['results']), 1)
+        
     # ❌ não autenticado não pode listar
     def test_list_products_unauthenticated(self):
         response = self.client.get(self.products_url)
@@ -185,7 +186,7 @@ class ProductTests(TestCase):
         token = response.data['access']
         self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {token}')
         response = self.client.put(self.product_url, self.product_data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     # ✅ seller pode deletar seu produto
     def test_delete_product_as_seller(self):

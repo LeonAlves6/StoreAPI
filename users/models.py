@@ -26,7 +26,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(unique=True)
     phone = models.CharField(max_length=11)
     birth_at = models.DateField(verbose_name='data_nascimento', null=True, blank=True)
-    role = models.CharField(max_length=10, choices=[('customer', 'Customer'), ('seller', 'Seller')], default='customer')
+    role = models.CharField(max_length=10, choices=[('customer', 'Customer'), ('seller', 'Seller'), ('admin', 'Admin')], default='customer')
     reset_token = models.CharField(max_length=64, null=True, blank=True)
     reset_token_expires = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)

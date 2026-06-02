@@ -3,6 +3,8 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.exceptions import PermissionDenied
 from users.models import User
 from .serializers import RegisterSerializer, LoginSerializer, ForgotPasswordSerializer, ResetPasswordSerializer
 from django.core.mail import send_mail
@@ -10,6 +12,26 @@ from django.utils import timezone
 from datetime import timedelta
 import secrets
 
+class UpdateUserRoleView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def patch(self, request, user_id):
+        if request.user.role != 'admin':
+            raise PermissionDenied('Apenas admins podem alterar roles')
+        
+        try:
+            user = User.objects.get(id=user_id)
+        except User.DoesNotExist:
+            return Response({'error': 'Usuário não encontrado'}, status=status.HTTP_404_NOT_FOUND)
+        
+        new_role = request.data.get('role')
+        if new_role not in ['customer', 'seller']:
+            return Response({'error': 'Role inválido'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        user.role = new_role
+        user.save()
+
+        return Response({'message': f'Role atualizado para {new_role}'}, status=status.HTTP_200_OK)
 class RegisterView(APIView):
     def post(self, request):
         serializer = RegisterSerializer(data=request.data)

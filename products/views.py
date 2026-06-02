@@ -1,6 +1,6 @@
-from rest_framework import viewsets, status
+from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
+from rest_framework.exceptions import PermissionDenied
 from .models import Product
 from .serializers import ProductSerializer
 
@@ -10,24 +10,27 @@ class ProductViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-
         if user.role == 'seller':
-            return Product.objects.filter(seller=user)
+            return Product.objects.all().order_by('-created_at')
         
-        return Product.objects.filter(is_active=True)
+        return Product.objects.filter(is_active=True).order_by('-created_at')
     
     def perform_create(self, serializer):
         if self.request.user.role != 'seller':
-            raise PermissionError('Apenas lojistas podem criar produtos')
+            raise PermissionDenied('Apenas lojistas podem criar produtos')
         serializer.save(seller=self.request.user)
 
     def perform_update(self, serializer):
+        if self.request.user.role != 'seller':
+            raise PermissionDenied('Apenas lojistas podem editar produtos')
         product = self.get_object()
         if product.seller != self.request.user:
-            raise PermissionError('Você não tem permissão para editar este produto!')
+            raise PermissionDenied('Você não tem permissão para editar este produto')
         serializer.save()
 
     def perform_destroy(self, instance):
+        if self.request.user.role != 'seller':
+            raise PermissionDenied('Apenas lojistas podem deletar produtos')
         if instance.seller != self.request.user:
-            raise PermissionError('Você não tem permissão para deletar este produto!')
+            raise PermissionDenied('Você não tem permissão para deletar este produto')
         instance.delete()
