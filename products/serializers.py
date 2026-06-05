@@ -29,3 +29,36 @@ class ProductSerializer(serializers.ModelSerializer):
         if value <= 0:
             raise serializers.ValidationError('Preço deve ser maior que zero!')
         return value
+
+class VariationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Variation
+        fields = ['id', 'size', 'color', 'stock']
+    
+    def validate_stock(self, value):
+        if value < 0:
+            raise serializers.ValidationError('Estoque não pode ser negativo')
+        return value
+    
+    def validate(self, data):
+        product = self.context.get('product')
+        size = data.get('size')
+        color = data.get('color')
+
+        if product:
+            queryset = Variation.objects.filter(
+                product=product,
+                size=size,
+                color=color
+            )
+            # na edição exclui a própria variação da verificação
+            if self.instance:
+                queryset = queryset.exclude(id=self.instance.id)
+
+            if queryset.exists():
+                raise serializers.ValidationError(
+                    {'variation': f'Variação {size} + {color} já existe para este produto'}
+                )
+
+        return data
+    

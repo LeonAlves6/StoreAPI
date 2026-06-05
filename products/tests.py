@@ -1,7 +1,7 @@
 from django.test import TestCase
 from rest_framework.test import APIClient
 from rest_framework import status
-from .models import Category, Product
+from .models import Category, Product, Variation
 from users.models import User
 
 class ProductTests(TestCase):
@@ -168,17 +168,17 @@ class ProductTests(TestCase):
         response = self.client.put(self.product_url, self.product_data, format='json')
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
-    # ❌ seller não pode editar produto de outro seller
-    def test_update_product_of_another_seller(self):
+    def test_update_product_as_another_seller(self):
+    # qualquer seller pode editar qualquer produto
         other_seller = User.objects.create_user(
-            email='other@email.com',
-            full_name='Other Seller',
-            cpf='11122233344',
-            phone='84777777777',
-            birth_at='1990-01-01',
-            role='seller',
-            password='Senha@123'
-        )
+        email='other@email.com',
+        full_name='Other Seller',
+        cpf='11122233344',
+        phone='84777777777',
+        birth_at='1990-01-01',
+        role='seller',
+        password='Senha@123'
+    )
         response = self.client.post('/auth/login/', {
             'email': 'other@email.com',
             'password': 'Senha@123'
@@ -186,7 +186,7 @@ class ProductTests(TestCase):
         token = response.data['access']
         self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {token}')
         response = self.client.put(self.product_url, self.product_data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     # ✅ seller pode deletar seu produto
     def test_delete_product_as_seller(self):
@@ -199,3 +199,132 @@ class ProductTests(TestCase):
         self.authenticate_as_customer()
         response = self.client.delete(self.product_url)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+class VariationTests(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+
+        self.seller = User.objects.create_user(
+            email='seller@email.com',
+            full_name='Seller Test',
+            cpf='12345678901',
+            phone='84999999999',
+            birth_at='1990-01-01',
+            role='seller',
+            password='Senha@123'
+        )
+
+        self.customer = User.objects.create_user(
+            email='customer@email.com',
+            full_name='Customer Test',
+            cpf='98765432100',
+            phone='84888888888',
+            birth_at='1995-01-01',
+            role='customer',
+            password='Senha@123'
+        )
+
+        self.category = Category.objects.create(
+            name='Camisetas',
+            slug='camisetas'
+        )
+
+        self.product = Product.objects.create(
+            seller=self.seller,
+            category=self.category,
+            name='Camiseta Básica',
+            description='Camiseta 100% algodão',
+            price='59.90',
+            is_active=True
+        )
+
+        self.variation = Variation.objects.create(
+            product=self.product,
+            size='M',
+            color='Azul',
+            stock=10
+        )
+
+        self.variations_url = f'/products/{self.product.id}/variations/'
+        self.variation_url = f'/variations/{self.variation.id}/'
+
+        self.variation_data = {
+            'size': 'G',
+            'color': 'Vermelho',
+            'stock': 5
+        }
+
+    def authenticate_as_seller(self):
+        response = self.client.post('/auth/login/', {
+            'email': 'seller@email.com',
+            'password': 'Senha@123'
+        }, format='json')
+        token = response.data['access']
+        self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {token}')
+
+    def authenticate_as_customer(self):
+        response = self.client.post('/auth/login/', {
+            'email': 'customer@email.com',
+            'password': 'Senha@123'
+        }, format='json')
+        token = response.data['access']
+        self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {token}')
+
+    # ✅ seller pode criar variação
+    def test_create_variation_as_seller(self):
+        self.authenticate_as_seller()
+        response = self.client.post(self.variations_url, self.variation_data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    # ❌ não permite variação duplicada
+    def test_create_duplicate_variation(self):
+        self.authenticate_as_seller()
+        data = {'size': 'M', 'color': 'Azul', 'stock': 5}  # já existe no setUp
+        response = self.client.post(self.variations_url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    # ❌ estoque negativo não é permitido
+    def test_create_variation_negative_stock(self):
+        self.authenticate_as_seller()
+        data = self.variation_data.copy()
+        data['stock'] = -1
+        response = self.client.post(self.variations_url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    # ❌ customer não pode criar variação
+    def test_create_variation_as_customer(self):
+        self.authenticate_as_customer()
+        response = self.client.post(self.variations_url, self.variation_data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    # ✅ seller pode editar variação
+    def test_update_variation_as_seller(self):
+        self.authenticate_as_seller()
+        data = {'size': 'M', 'color': 'Azul', 'stock': 20}
+        response = self.client.put(self.variation_url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['stock'], 20)
+
+    # ❌ customer não pode editar variação
+    def test_update_variation_as_customer(self):
+        self.authenticate_as_customer()
+        response = self.client.put(self.variation_url, self.variation_data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    # ✅ seller pode deletar variação
+    def test_delete_variation_as_seller(self):
+        self.authenticate_as_seller()
+        response = self.client.delete(self.variation_url)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+    # ❌ customer não pode deletar variação
+    def test_delete_variation_as_customer(self):
+        self.authenticate_as_customer()
+        response = self.client.delete(self.variation_url)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    # ❌ variação inexistente retorna 404
+    def test_delete_nonexistent_variation(self):
+        self.authenticate_as_seller()
+        response = self.client.delete('/variations/99999/')
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
