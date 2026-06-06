@@ -7,4 +7,6 @@ urlpatterns = [
     path('auth/', include('users.urls')),
     path('auth/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('', include('products.urls')),
+    path('contact/', include('contact.urls')),
+    path('', include('orders.urls')),
 ]

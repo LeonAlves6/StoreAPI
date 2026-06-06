@@ -11,9 +11,8 @@ class RegisterSerializer(serializers.ModelSerializer):
         fields = ['id', 'full_name', 'cpf', 'email', 'phone', 'birth_at', 'role', 'password']
 
     def validate_role(self, value):
-        if value not in ['customer', 'seller']:
+        if value not in ['customer']:
             raise serializers.ValidationError('Role inválido')
-        
         return value
 
     def validate(self, data):
@@ -24,6 +23,12 @@ class RegisterSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({'cpf': 'CPF já cadastrado'})
 
         return data
+    
+    def validate_birth_at(self, value):
+        from datetime import date
+        if value > date.today():
+            raise serializers.ValidationError('Data de nascimento não pode ser no futuro')
+        return value
 
     def create(self, validated_data):
         password = validated_data.pop('password')

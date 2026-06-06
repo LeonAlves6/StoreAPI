@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import Category, Product, Variation
+from .validators import validate_positive_price, validate_positive_stock
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
@@ -7,39 +8,12 @@ class CategorySerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'slug']
 
 class VariationSerializer(serializers.ModelSerializer):
+    stock = serializers.IntegerField(validators=[validate_positive_stock])
+
     class Meta:
         model = Variation
         fields = ['id', 'size', 'color', 'stock']
 
-class ProductSerializer(serializers.ModelSerializer):
-    variations = VariationSerializer(many=True, read_only=True)
-    category = CategorySerializer(read_only=True)
-    category_id = serializers.PrimaryKeyRelatedField(
-        queryset=Category.objects.all(),
-        source='category',
-        write_only=True
-    )
-
-    class Meta:
-        model = Product
-        fields = ['id', 'name', 'description', 'price', 'is_active', 'category', 'category_id', 'variations', 'created_at']
-        read_only_fields = ['id', 'created_at']
-
-    def validate_price(self, value):
-        if value <= 0:
-            raise serializers.ValidationError('Preço deve ser maior que zero!')
-        return value
-
-class VariationSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Variation
-        fields = ['id', 'size', 'color', 'stock']
-    
-    def validate_stock(self, value):
-        if value < 0:
-            raise serializers.ValidationError('Estoque não pode ser negativo')
-        return value
-    
     def validate(self, data):
         product = self.context.get('product')
         size = data.get('size')
@@ -51,7 +25,6 @@ class VariationSerializer(serializers.ModelSerializer):
                 size=size,
                 color=color
             )
-            # na edição exclui a própria variação da verificação
             if self.instance:
                 queryset = queryset.exclude(id=self.instance.id)
 
@@ -61,4 +34,23 @@ class VariationSerializer(serializers.ModelSerializer):
                 )
 
         return data
+
+class ProductSerializer(serializers.ModelSerializer):
+    variations = VariationSerializer(many=True, read_only=True)
+    category = CategorySerializer(read_only=True)
+    category_id = serializers.PrimaryKeyRelatedField(
+        queryset=Category.objects.all(),
+        source='category',
+        write_only=True
+    )
+    price = serializers.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        validators=[validate_positive_price]
+    )
+
+    class Meta:
+        model = Product
+        fields = ['id', 'name', 'description', 'price', 'is_active', 'category', 'category_id', 'variations', 'created_at']
+        read_only_fields = ['id', 'created_at']
     

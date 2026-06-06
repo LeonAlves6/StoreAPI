@@ -16,7 +16,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get('DEBUG', False) == 'True'
 
 ALLOWED_HOSTS = []
 
@@ -36,6 +36,8 @@ INSTALLED_APPS = [
     'anymail',
     'users',
     'products',
+    'contact',
+    'orders',
 ]
 
 #desenvolvimento
@@ -152,3 +154,5 @@ else:
         'ACCESS_TOKEN_LIFETIME': timedelta(minutes=30),  # expira em 24h no lugar de 5 min
         'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
     }
+
+CONTACT_EMAIL = os.environ.get('CONTACT_EMAIL', 'suporte@newstyle.com')
