@@ -165,3 +165,77 @@ class OrderDetailView(APIView):
         
         serializer = OrderSerializer(order)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+class OrderListView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        if request.user.role != 'seller':
+            raise PermissionDenied('Apenas lojistas podem listar todos os pedidos')
+
+        queryset = Order.objects.all().order_by('created_at')
+
+        status_filter = request.query_params.get('status')
+
+        if status_filter:
+            queryset = queryset.filter(status=status_filter)
+        
+        from rest_framework.pagination import PageNumberPagination
+        paginator = PageNumberPagination()
+        paginator.page_size = 10
+        page = paginator.paginate_queryset(queryset, request)
+        serializer = OrderSerializer(page, many=True)
+        return paginator.get_paginated_response(serializer.data)
+    
+class OrderStatusView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    VALID_TRANSITIONS = {
+        'pending':    ['processing', 'cancelled'],
+        'processing': ['shipped', 'cancelled'],
+        'shipped':    ['delivered'],
+        'delivered':  [],  # status final
+        'cancelled':  [],  # status final
+    }
+
+    def patch(self,request, order_id):
+        if request.user.role != 'seller':
+            raise PermissionDenied('Apenas lojistas podem atualizar o status de pedidos')
+        
+        try:
+            order = Order.objects.get(id=order_id)
+        except Order.DoesNotExist:
+            return Response(
+                {'error': 'Pedido não encontrado'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+        new_status = request.data.get('status')
+
+        if not new_status:
+            return Response(
+                {'error': 'Status é obrigatório'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        valid_statuses = [choice[0] for choice in Order.STATUS_CHOICES]
+        if new_status not in valid_statuses:
+            return Response(
+                {'error': f'Status inválido. Valores permitidos: {valid_statuses}'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        allowed = self.VALID_TRANSITIONS.get(order.status, [])
+        if new_status not in allowed:
+            return Response(
+                {'error': f'Transição inválida. De "{order.status}" só é permitido ir para: {allowed}'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        order.status = new_status
+        order.save()
+
+        return Response(
+            OrderSerializer(order).data,
+            status=status.HTTP_200_OK
+        )

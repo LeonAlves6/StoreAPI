@@ -3,7 +3,7 @@ from rest_framework.test import APIClient
 from rest_framework import status
 from users.models import User
 from products.models import Category, Product, Variation
-from .models import Cart, CartItem
+from .models import Cart, CartItem, Order
 from users.models import Address
 
 class CartTests(TestCase):
@@ -341,3 +341,191 @@ class OrderTests(TestCase):
         self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {token}')
         response = self.client.get(f'/orders/{order_id}/')
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+class OrderManagementTests(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+
+        self.customer = User.objects.create_user(
+            email='customer@email.com',
+            full_name='Customer Test',
+            cpf='98765432100',
+            phone='84888888888',
+            birth_at='1995-01-01',
+            role='customer',
+            password='Senha@123'
+        )
+
+        self.seller = User.objects.create_user(
+            email='seller@email.com',
+            full_name='Seller Test',
+            cpf='12345678901',
+            phone='84999999999',
+            birth_at='1990-01-01',
+            role='seller',
+            password='Senha@123'
+        )
+
+        self.category = Category.objects.create(name='Camisetas', slug='camisetas')
+
+        self.product = Product.objects.create(
+            seller=self.seller,
+            category=self.category,
+            name='Camiseta Básica',
+            description='Algodão',
+            price='59.90',
+            is_active=True
+        )
+
+        self.variation = Variation.objects.create(
+            product=self.product,
+            size='M',
+            color='Azul',
+            stock=10
+        )
+
+        self.address = Address.objects.create(
+            user=self.customer,
+            street='Rua das Flores',
+            number='10',
+            neighborhood='Tirol',
+            city='Natal',
+            state='RN',
+            zip_code='59020000',
+            is_default=True
+        )
+
+        # cria um pedido direto pelo model para os testes
+        self.order = Order.objects.create(
+            customer=self.customer,
+            total='59.90',
+            address_street='Rua das Flores',
+            address_number='10',
+            address_neighborhood='Tirol',
+            address_city='Natal',
+            address_state='RN',
+            address_zip_code='59020000',
+        )
+
+        self.list_url = '/orders/list/'
+        self.status_url = f'/orders/{self.order.id}/status/'
+
+    def authenticate_as_seller(self):
+        response = self.client.post('/auth/login/', {
+            'email': 'seller@email.com',
+            'password': 'Senha@123'
+        }, format='json')
+        token = response.data['access']
+        self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {token}')
+
+    def authenticate_as_customer(self):
+        response = self.client.post('/auth/login/', {
+            'email': 'customer@email.com',
+            'password': 'Senha@123'
+        }, format='json')
+        token = response.data['access']
+        self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {token}')
+
+    # ✅ seller pode listar pedidos
+    def test_list_orders_as_seller(self):
+        self.authenticate_as_seller()
+        response = self.client.get(self.list_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn('results', response.data)
+
+    # ❌ customer não pode listar todos os pedidos
+    def test_list_orders_as_customer(self):
+        self.authenticate_as_customer()
+        response = self.client.get(self.list_url)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    # ✅ filtra por status
+    def test_list_orders_filter_by_status(self):
+        self.authenticate_as_seller()
+        response = self.client.get(f'{self.list_url}?status=pending')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        for order in response.data['results']:
+            self.assertEqual(order['status'], 'pending')
+
+    # ✅ pedidos ordenados do mais antigo para o mais novo
+    def test_list_orders_ordered_by_oldest(self):
+        self.authenticate_as_seller()
+        Order.objects.create(
+            customer=self.customer,
+            total='99.90',
+            address_street='Rua X',
+            address_number='1',
+            address_neighborhood='Bairro',
+            address_city='Natal',
+            address_state='RN',
+            address_zip_code='59000000',
+        )
+        response = self.client.get(self.list_url)
+        results = response.data['results']
+        self.assertEqual(results[0]['id'], self.order.id)  # mais antigo primeiro
+
+    # ✅ seller pode atualizar status
+    def test_update_status_valid_transition(self):
+        self.authenticate_as_seller()
+        response = self.client.patch(self.status_url, {
+            'status': 'processing'
+        }, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['status'], 'processing')
+
+    # ❌ transição inválida
+    def test_update_status_invalid_transition(self):
+        self.authenticate_as_seller()
+        # pending → delivered não é permitido
+        response = self.client.patch(self.status_url, {
+            'status': 'delivered'
+        }, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    # ❌ status inexistente
+    def test_update_status_nonexistent(self):
+        self.authenticate_as_seller()
+        response = self.client.patch(self.status_url, {
+            'status': 'voando'
+        }, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    # ❌ customer não pode atualizar status
+    def test_update_status_as_customer(self):
+        self.authenticate_as_customer()
+        response = self.client.patch(self.status_url, {
+            'status': 'processing'
+        }, format='json')
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    # ✅ fluxo completo de status
+    def test_full_status_flow(self):
+        self.authenticate_as_seller()
+        # pending → processing
+        self.client.patch(self.status_url, {'status': 'processing'}, format='json')
+        # processing → shipped
+        self.client.patch(self.status_url, {'status': 'shipped'}, format='json')
+        # shipped → delivered
+        response = self.client.patch(self.status_url, {'status': 'delivered'}, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['status'], 'delivered')
+
+    # ❌ não pode alterar status de pedido entregue
+    def test_cannot_update_delivered_order(self):
+        self.order.status = 'delivered'
+        self.order.save()
+        self.authenticate_as_seller()
+        response = self.client.patch(self.status_url, {
+            'status': 'processing'
+        }, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    # ❌ não pode alterar status de pedido cancelado
+    def test_cannot_update_cancelled_order(self):
+        self.order.status = 'cancelled'
+        self.order.save()
+        self.authenticate_as_seller()
+        response = self.client.patch(self.status_url, {
+            'status': 'processing'
+        }, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
