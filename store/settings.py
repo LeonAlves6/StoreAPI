@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'products',
     'contact',
     'orders',
+    'payments',
 ]
 
 #desenvolvimento
