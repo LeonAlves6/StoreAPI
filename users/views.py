@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
+from django.conf import settings
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import PermissionDenied
 from users.models import User
@@ -92,7 +93,7 @@ class ForgotPasswordView(APIView):
             send_mail(
                 subject='Redefinição de senha',
                 message=f'Use o token abaixo para redefinir sua senha:\n\n{token}\n\nO token expira em 1 hora.',
-                from_email='noreply@newstyle.com',
+                from_email=settings.DEFAULT_FROM_EMAIL,
                 recipient_list=[email],
             )
 

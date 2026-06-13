@@ -94,7 +94,7 @@ class CreateOrderSerializer(serializers.Serializer):
         try:
             Address.objects.get(id=value, user=customer)
         except Address.DoesNotExist:
-            raise serializers.ValidationError('Endreço não encontrado')
+            raise serializers.ValidationError('Endereço não encontrado')
         return value
     
     def validate(self, data):

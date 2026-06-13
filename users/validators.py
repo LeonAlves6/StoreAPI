@@ -29,6 +29,16 @@ def validate_cpf(value):
     if cpf == cpf[0] * 11:
         raise serializers.ValidationError('CPF inválido')
 
+    soma = sum(int(cpf[i]) * (10 - i) for i in range(9))
+    digito1 = (soma * 10 % 11) % 10
+    if int(cpf[9]) != digito1:
+        raise serializers.ValidationError('CPF inválido')
+
+    soma = sum(int(cpf[i]) * (11 - i) for i in range(10))
+    digito2 = (soma * 10 % 11) % 10
+    if int(cpf[10]) != digito2:
+        raise serializers.ValidationError('CPF inválido')
+
     return cpf
 
 def validate_phone(value):

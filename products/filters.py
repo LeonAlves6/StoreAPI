@@ -16,7 +16,7 @@ class ProductFilter(django_filters.FilterSet):
     price_max = django_filters.NumberFilter(field_name='price', lookup_expr='lte')
 
     #filtro por tamanho
-    size = django_filters.CharFilter(field_name='variation__size', lookup_expr='iexact')
+    size = django_filters.CharFilter(field_name='variations__size', lookup_expr='iexact')
 
     #filtro por cor
     color = django_filters.CharFilter(field_name='variations__color', lookup_expr='icontains')

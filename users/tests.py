@@ -9,7 +9,7 @@ class AuthTests(TestCase):
         self.login_url = '/auth/login/'
         self.user_data = {
             'full_name': 'João Silva',
-            'cpf': '12345678901',
+            'cpf': '13297456043',
             'email': 'joao@email.com',
             'phone': '84999999999',
             'birth_at': '2000-01-01',

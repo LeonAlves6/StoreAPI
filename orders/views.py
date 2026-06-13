@@ -5,6 +5,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import PermissionDenied
 from .models import Cart, CartItem, Order, OrderItem
 from .serializers import CartSerializer, CartItemSerializer, OrderSerializer, CreateOrderSerializer
+from rest_framework.pagination import PageNumberPagination
 from django.db import transaction
 from users.models import Address
 
@@ -180,7 +181,6 @@ class OrderListView(APIView):
         if status_filter:
             queryset = queryset.filter(status=status_filter)
         
-        from rest_framework.pagination import PageNumberPagination
         paginator = PageNumberPagination()
         paginator.page_size = 10
         page = paginator.paginate_queryset(queryset, request)

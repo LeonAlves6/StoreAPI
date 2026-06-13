@@ -5,12 +5,9 @@ from django.core.mail import send_mail
 from django.conf import settings
 import threading
 from .serializers import ContactSerializer
-from .models import ContactMessage
 
 def send_contact_email_async(name, email, subject, message):
     try:
-        from django.core.mail import send_mail
-        from django.conf import settings
         send_mail(
             subject=f'[Contato] {subject}',
             message=f'Nome: {name}\nEmail: {email}\n\nMensagem:\n{message}',

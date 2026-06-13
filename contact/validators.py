@@ -10,4 +10,6 @@ def validate_message_length(value):
 def validate_subject_length(value):
     if len(value) < 3:
         raise serializers.ValidationError('Assunto deve ter no mínimo 3 caracteres')
+    if len(value) > 150:
+        raise serializers.ValidationError('Assunto deve ter no máximo 150 caracteres')
     return value
