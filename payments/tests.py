@@ -68,28 +68,28 @@ class PaymentMethodTests(TestCase):
         token = response.data['access']
         self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {token}')
 
-    # ✅ customer pode listar seus métodos
+    # customer pode listar seus métodos
     def test_list_payment_methods(self):
         self.authenticate_as_customer()
         response = self.client.get(self.payments_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 1)
 
-    # ✅ cadastra cartão de crédito
+    # cadastra cartão de crédito
     def test_create_credit_card(self):
         self.authenticate_as_customer()
         response = self.client.post(self.payments_url, self.credit_card_data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(response.data['last4'], '5678')
 
-    # ✅ cadastra pix
+    # cadastra pix
     def test_create_pix(self):
         self.authenticate_as_customer()
         response = self.client.post(self.payments_url, self.pix_data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(response.data['pix_key'], 'joao@email.com')
 
-    # ❌ cartão sem last4
+    # cartão sem last4
     def test_create_card_without_last4(self):
         self.authenticate_as_customer()
         data = self.credit_card_data.copy()
@@ -97,14 +97,14 @@ class PaymentMethodTests(TestCase):
         response = self.client.post(self.payments_url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-    # ❌ pix sem chave
+    # pix sem chave
     def test_create_pix_without_key(self):
         self.authenticate_as_customer()
         data = {'type': 'pix', 'is_default': False}
         response = self.client.post(self.payments_url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-    # ❌ last4 não numérico
+    # last4 não numérico
     def test_create_card_invalid_last4(self):
         self.authenticate_as_customer()
         data = self.credit_card_data.copy()
@@ -112,7 +112,7 @@ class PaymentMethodTests(TestCase):
         response = self.client.post(self.payments_url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-    # ✅ ao cadastrar novo padrão, desativa o anterior
+    # ao cadastrar novo padrão, desativa o anterior
     def test_new_default_deactivates_old(self):
         self.authenticate_as_customer()
         data = self.credit_card_data.copy()
@@ -121,13 +121,13 @@ class PaymentMethodTests(TestCase):
         self.payment_method.refresh_from_db()
         self.assertFalse(self.payment_method.is_default)
 
-    # ✅ customer pode deletar seu método
+    # customer pode deletar seu método
     def test_delete_payment_method(self):
         self.authenticate_as_customer()
         response = self.client.delete(self.payment_url)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
-    # ❌ customer não pode deletar método de outro customer
+    # customer não pode deletar método de outro customer
     def test_delete_payment_method_of_another_customer(self):
         other_customer = User.objects.create_user(
             email='other@email.com',
@@ -147,13 +147,13 @@ class PaymentMethodTests(TestCase):
         response = self.client.delete(self.payment_url)
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
-    # ❌ seller não pode acessar pagamentos
+    # seller não pode acessar pagamentos
     def test_list_payments_as_seller(self):
         self.authenticate_as_seller()
         response = self.client.get(self.payments_url)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
-    # ❌ não autenticado não pode acessar
+    # não autenticado não pode acessar
     def test_list_payments_unauthenticated(self):
         response = self.client.get(self.payments_url)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)

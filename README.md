@@ -266,6 +266,7 @@ A documentação interativa (Swagger) está disponível em:
 
 - Local: `http://127.0.0.1:8000/api/docs/`
 - Redoc (alternativa): `http://127.0.0.1:8000/api/redoc/`
+- **Produção**: `https://LeonAlves.pythonanywhere.com/api/docs/`
 
 Nela você encontra a descrição de cada endpoint, parâmetros aceitos e exemplos de payload para requisições e respostas.
 

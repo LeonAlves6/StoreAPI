@@ -77,25 +77,25 @@ class ProductTests(TestCase):
         token = response.data['access']
         self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {token}')
 
-    # ✅ seller pode criar produto
+    # seller pode criar produto
     def test_create_product_as_seller(self):
         self.authenticate_as_seller()
         response = self.client.post(self.products_url, self.product_data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(response.data['name'], 'Camiseta Nova')
 
-    # ❌ customer não pode criar produto
+    # customer não pode criar produto
     def test_create_product_as_customer(self):
         self.authenticate_as_customer()
         response = self.client.post(self.products_url, self.product_data, format='json')
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
-    # ❌ não autenticado não pode criar produto
+    # não autenticado não pode criar produto
     def test_create_product_unauthenticated(self):
         response = self.client.post(self.products_url, self.product_data, format='json')
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
-    # ❌ preço negativo não é permitido
+    # preço negativo não é permitido
     def test_create_product_negative_price(self):
         self.authenticate_as_seller()
         data = self.product_data.copy()
@@ -103,7 +103,7 @@ class ProductTests(TestCase):
         response = self.client.post(self.products_url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-    # ❌ preço zero não é permitido
+    # preço zero não é permitido
     def test_create_product_zero_price(self):
         self.authenticate_as_seller()
         data = self.product_data.copy()
@@ -111,7 +111,7 @@ class ProductTests(TestCase):
         response = self.client.post(self.products_url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-    # ✅ customer vê apenas produtos ativos
+    # customer vê apenas produtos ativos
     def test_list_products_as_customer(self):
         self.authenticate_as_customer()
         response = self.client.get(self.products_url)
@@ -119,19 +119,19 @@ class ProductTests(TestCase):
         for product in response.data['results']:
             self.assertTrue(product['is_active'])
 
-    # ✅ seller vê apenas seus próprios produtos
+    # seller vê apenas seus próprios produtos
     def test_list_products_as_seller(self):
         self.authenticate_as_seller()
         response = self.client.get(self.products_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data['results']), 1)
         
-    # ❌ não autenticado não pode listar
+    # não autenticado não pode listar
     def test_list_products_unauthenticated(self):
         response = self.client.get(self.products_url)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
-    # ✅ produto inativo não aparece para customer
+    # produto inativo não aparece para customer
     def test_inactive_product_not_visible_to_customer(self):
         self.product.is_active = False
         self.product.save()
@@ -140,20 +140,20 @@ class ProductTests(TestCase):
         ids = [p['id'] for p in response.data['results']]
         self.assertNotIn(self.product.id, ids)
 
-    # ✅ busca produto por id
+    # busca produto por id
     def test_get_product_by_id(self):
         self.authenticate_as_customer()
         response = self.client.get(self.product_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['name'], 'Camiseta Básica')
 
-    # ❌ produto inexistente retorna 404
+    # produto inexistente retorna 404
     def test_get_nonexistent_product(self):
         self.authenticate_as_customer()
         response = self.client.get('/products/99999/')
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
     
-    # ✅ seller pode editar seu produto
+    # seller pode editar seu produto
     def test_update_product_as_seller(self):
         self.authenticate_as_seller()
         data = self.product_data.copy()
@@ -162,7 +162,7 @@ class ProductTests(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['name'], 'Camiseta Editada')
 
-    # ❌ customer não pode editar produto
+    # customer não pode editar produto
     def test_update_product_as_customer(self):
         self.authenticate_as_customer()
         response = self.client.put(self.product_url, self.product_data, format='json')
@@ -188,13 +188,13 @@ class ProductTests(TestCase):
         response = self.client.put(self.product_url, self.product_data, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    # ✅ seller pode deletar seu produto
+    # seller pode deletar seu produto
     def test_delete_product_as_seller(self):
         self.authenticate_as_seller()
         response = self.client.delete(self.product_url)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
-    # ❌ customer não pode deletar produto
+    # customer não pode deletar produto
     def test_delete_product_as_customer(self):
         self.authenticate_as_customer()
         response = self.client.delete(self.product_url)
@@ -270,20 +270,20 @@ class VariationTests(TestCase):
         token = response.data['access']
         self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {token}')
 
-    # ✅ seller pode criar variação
+    # seller pode criar variação
     def test_create_variation_as_seller(self):
         self.authenticate_as_seller()
         response = self.client.post(self.variations_url, self.variation_data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
-    # ❌ não permite variação duplicada
+    # não permite variação duplicada
     def test_create_duplicate_variation(self):
         self.authenticate_as_seller()
         data = {'size': 'M', 'color': 'Azul', 'stock': 5}  # já existe no setUp
         response = self.client.post(self.variations_url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-    # ❌ estoque negativo não é permitido
+    # estoque negativo não é permitido
     def test_create_variation_negative_stock(self):
         self.authenticate_as_seller()
         data = self.variation_data.copy()
@@ -291,13 +291,13 @@ class VariationTests(TestCase):
         response = self.client.post(self.variations_url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-    # ❌ customer não pode criar variação
+    # customer não pode criar variação
     def test_create_variation_as_customer(self):
         self.authenticate_as_customer()
         response = self.client.post(self.variations_url, self.variation_data, format='json')
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
-    # ✅ seller pode editar variação
+    # seller pode editar variação
     def test_update_variation_as_seller(self):
         self.authenticate_as_seller()
         data = {'size': 'M', 'color': 'Azul', 'stock': 20}
@@ -305,25 +305,25 @@ class VariationTests(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['stock'], 20)
 
-    # ❌ customer não pode editar variação
+    # customer não pode editar variação
     def test_update_variation_as_customer(self):
         self.authenticate_as_customer()
         response = self.client.put(self.variation_url, self.variation_data, format='json')
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
-    # ✅ seller pode deletar variação
+    # seller pode deletar variação
     def test_delete_variation_as_seller(self):
         self.authenticate_as_seller()
         response = self.client.delete(self.variation_url)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
-    # ❌ customer não pode deletar variação
+    # customer não pode deletar variação
     def test_delete_variation_as_customer(self):
         self.authenticate_as_customer()
         response = self.client.delete(self.variation_url)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
-    # ❌ variação inexistente retorna 404
+    # variação inexistente retorna 404
     def test_delete_nonexistent_variation(self):
         self.authenticate_as_seller()
         response = self.client.delete('/variations/99999/')

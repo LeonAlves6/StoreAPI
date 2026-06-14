@@ -1,3 +1,9 @@
+# views.py — App: orders
+# Responsável pelo gerenciamento de carrinho e pedidos.
+# Dois atores operam aqui:
+#   - Cliente (customer): gerencia o próprio carrinho e realiza pedidos
+#   - Lojista (seller): lista todos os pedidos e atualiza o status deles
+
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -11,17 +17,33 @@ from rest_framework import serializers as drf_serializers
 from django.db import transaction
 from users.models import Address
 
+# ─────────────────────────────────────────────
+# CartView
+# GET /cart/
+# Retorna o carrinho do cliente autenticado com itens e total.
+# Restrito a clientes (role=customer).
+# ─────────────────────────────────────────────
 class CartView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
+        # Apenas clientes possuem carrinho
         if request.user.role != 'customer':
             raise PermissionDenied('Apenas clientes podem acessar o carrinho')
         
+        # get_or_create garante que o carrinho existe antes de retorná-lo
+        # Se o cliente ainda não tiver um carrinho, ele é criado vazio
         cart, _ = Cart.objects.get_or_create(customer=request.user)
         serializer = CartSerializer(cart)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
+    # ─────────────────────────────────────────────
+# CartItemView
+# POST /cart/items/
+# Adiciona um item ao carrinho do cliente autenticado.
+# Se a variação já estiver no carrinho, a quantidade é somada (não duplicada).
+# Restrito a clientes (role=customer).
+# ─────────────────────────────────────────────
 class CartItemView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -75,17 +97,24 @@ class CartItemView(APIView):
     )
 
     def post(self, request):
+        # Apenas clientes podem manipular o carrinho
         if request.user.role != 'customer':
             raise PermissionDenied('Apenas clientes podem adicionar itens ao carrinho')
+        
+        # Obtém ou cria o carrinho do cliente antes de adicionar o item
         cart, _ = Cart.objects.get_or_create(customer=request.user)
 
         variation_id = request.data.get('variation_id')
+
+        # Verifica se a variação já existe no carrinho para evitar duplicatas
         existing_item = CartItem.objects.filter(
             cart=cart,
             variation_id=variation_id
         ).first()
 
         if existing_item:
+            # Se o item já existe, soma a nova quantidade à existente
+            # Em vez de criar um novo registro duplicado
             new_quantity = existing_item.quantity + request.data.get('quantity', 1)
             serializer = CartItemSerializer(
                 existing_item,
@@ -93,27 +122,45 @@ class CartItemView(APIView):
                 partial=True
             )
         else:
+            # Item novo: cria um registro completo no carrinho
             serializer = CartItemSerializer(data=request.data)
 
         if serializer.is_valid():
+            # O carrinho é associado ao item na hora de salvar,
+            # não precisa ser enviado no body da requisição
             serializer.save(cart=cart)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+# ─────────────────────────────────────────────
+# CartItemDetailView
+# PUT    /cart/items/:id/ — atualiza quantidade de um item
+# DELETE /cart/items/:id/ — remove um item do carrinho
+# Restrito ao cliente dono do carrinho (role=customer).
+# ─────────────────────────────────────────────
 class CartItemDetailView(APIView):
     permission_classes = [IsAuthenticated]
 
     def _get_item(self, item_id, user):
+        """
+        Helper que busca um item do carrinho pelo ID, garantindo que
+        ele pertença ao carrinho do usuário autenticado.
+        O filtro cart__customer=user impede que um cliente acesse
+        ou modifique itens do carrinho de outro cliente.
+        Retorna o CartItem ou None se não encontrado ou não autorizado.
+        """
         try:
             return CartItem.objects.get(id=item_id, cart__customer=user)
         except CartItem.DoesNotExist:
             return None
     
     def put(self, request, item_id):
+        # Apenas clientes podem atualizar itens do próprio carrinho
         if request.user.role != 'customer':
             raise PermissionDenied('Apenas clientes podem atualizar itens do carrinho')
         
+        # O helper já garante que o item pertence ao cliente autenticado
         item = self._get_item(item_id, request.user)
         if not item:
             return Response(
@@ -121,6 +168,7 @@ class CartItemDetailView(APIView):
                 status=status.HTTP_404_NOT_FOUND
             )
         
+        # partial=True permite atualizar só a quantidade sem exigir variation_id
         serializer = CartItemSerializer(item, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
@@ -129,9 +177,11 @@ class CartItemDetailView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
     def delete(self, request, item_id):
+        # Apenas clientes podem remover itens do próprio carrinho
         if request.user.role != 'customer':
             raise PermissionDenied('Apenas clientes podem remover itens do carrinho')
         
+        # O helper já garante que o item pertence ao cliente autenticado
         item = self._get_item(item_id, request.user)
         if not item:
             return Response(
@@ -142,6 +192,14 @@ class CartItemDetailView(APIView):
         item.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
     
+# ─────────────────────────────────────────────
+# OrderView
+# POST /orders/
+# Converte o carrinho em um pedido.
+# Valida estoque, subtrai as quantidades, registra snapshot do endereço
+# e esvazia o carrinho — tudo dentro de uma única transação atômica.
+# Restrito a clientes (role=customer).
+# ─────────────────────────────────────────────
 class OrderView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -214,28 +272,40 @@ class OrderView(APIView):
     )
 
     def post(self, request):
+        # Apenas clientes podem realizar pedidos
         if request.user.role != 'customer':
             raise PermissionDenied('Apenas clientes podem realizar pedidos')
         
+        # CreateOrderSerializer valida:
+        # - se o address_id pertence ao cliente autenticado
+        # - se o carrinho não está vazio
+        # - se há estoque suficiente para cada item
         serializer = CreateOrderSerializer(
             data=request.data,
             context={'request': request}
         )
 
         if serializer.is_valid():
+            # Busca o endereço validado para copiar os dados para o pedido
             address = Address.objects.get(
                 id=serializer.validated_data['address_id'],
                 user=request.user
             )
             cart = Cart.objects.get(customer=request.user)
 
-
+            # transaction.atomic garante que todas as operações abaixo
+            # são executadas como uma unidade: se qualquer etapa falhar,
+            # nenhuma alteração é persistida no banco (tudo ou nada)
             with transaction.atomic():
+                # Calcula o total somando preço * quantidade de cada item
                 total = sum(
                     item.variation.product.price * item.quantity
                     for item in cart.items.all()
                 )
 
+                # Cria o pedido com snapshot do endereço
+                # O endereço é copiado campo a campo para preservar o histórico:
+                # se o cliente alterar o endereço depois, o pedido mantém o endereço original
                 order = Order.objects.create(
                     customer=request.user,
                     total=total,
@@ -248,7 +318,10 @@ class OrderView(APIView):
                     address_zip_code=address.zip_code,
                 )
 
+                # Para cada item do carrinho, cria um OrderItem e subtrai o estoque
                 for item in cart.items.all():
+                    # unit_price é salvo no momento da compra para preservar o histórico:
+                    # se o preço do produto mudar depois, o pedido mantém o preço original
                     OrderItem.objects.create(
                         order=order,
                         variation=item.variation,
@@ -256,9 +329,11 @@ class OrderView(APIView):
                         unit_price=item.variation.product.price,
                     )
 
+                    # Subtrai a quantidade comprada do estoque da variação
                     item.variation.stock -= item.quantity
                     item.variation.save()
-                
+
+                # Esvazia o carrinho após a criação bem-sucedida do pedido
                 cart.items.all().delete()
 
             return Response(
@@ -268,14 +343,24 @@ class OrderView(APIView):
         
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
+# ─────────────────────────────────────────────
+# OrderDetailView
+# GET /orders/:id/
+# Retorna os dados completos de um pedido.
+# Cliente: só vê seus próprios pedidos.
+# Lojista: pode ver qualquer pedido.
+# ─────────────────────────────────────────────
 class OrderDetailView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, order_id):
         try:
             if request.user.role == 'customer':
+                # Clientes só podem visualizar seus próprios pedidos
+                # O filtro customer=request.user garante o isolamento
                 order = Order.objects.get(id=order_id, customer=request.user)
             else:
+                # Lojistas e admins podem visualizar qualquer pedido
                 order = Order.objects.get(id=order_id)
         except Order.DoesNotExist:
             return Response(
@@ -286,29 +371,55 @@ class OrderDetailView(APIView):
         serializer = OrderSerializer(order)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+# ─────────────────────────────────────────────
+# OrderListView
+# GET /orders/list/
+# Lista todos os pedidos da loja com suporte a filtro por status e paginação.
+# Ordenados do mais antigo para o mais novo (conforme UC09).
+# Restrito a lojistas (role=seller).
+# ─────────────────────────────────────────────
 class OrderListView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
+        # Apenas lojistas têm acesso à listagem completa de pedidos
         if request.user.role != 'seller':
             raise PermissionDenied('Apenas lojistas podem listar todos os pedidos')
 
+        # Ordena do mais antigo para o mais novo para que lojistas
+        # atendam os pedidos na ordem de chegada (FIFO)
         queryset = Order.objects.all().order_by('created_at')
 
+        # Filtro opcional por status via query param: ?status=pending
         status_filter = request.query_params.get('status')
 
         if status_filter:
             queryset = queryset.filter(status=status_filter)
         
+        # Paginação manual com 10 pedidos por página
         paginator = PageNumberPagination()
         paginator.page_size = 10
         page = paginator.paginate_queryset(queryset, request)
         serializer = OrderSerializer(page, many=True)
         return paginator.get_paginated_response(serializer.data)
     
+# ─────────────────────────────────────────────
+# OrderStatusView
+# PATCH /orders/:id/status/
+# Atualiza o status de um pedido seguindo um fluxo válido de transições.
+# Transições permitidas:
+#   pending → processing | cancelled
+#   processing → shipped | cancelled
+#   shipped → delivered
+#   delivered → (estado final, sem transições)
+#   cancelled → (estado final, sem transições)
+# Restrito a lojistas (role=seller).
+# ─────────────────────────────────────────────
 class OrderStatusView(APIView):
     permission_classes = [IsAuthenticated]
 
+    # Mapa de transições válidas: chave é o status atual,
+    # valor é a lista de status para os quais é permitido avançar
     VALID_TRANSITIONS = {
         'pending':    ['processing', 'cancelled'],
         'processing': ['shipped', 'cancelled'],
@@ -381,6 +492,7 @@ class OrderStatusView(APIView):
     )
 
     def patch(self,request, order_id):
+        # Apenas lojistas podem alterar o status de pedidos
         if request.user.role != 'seller':
             raise PermissionDenied('Apenas lojistas podem atualizar o status de pedidos')
         
@@ -394,12 +506,14 @@ class OrderStatusView(APIView):
         
         new_status = request.data.get('status')
 
+        # O campo status é obrigatório no body da requisição
         if not new_status:
             return Response(
                 {'error': 'Status é obrigatório'},
                 status=status.HTTP_400_BAD_REQUEST
             )
         
+        # Extrai os valores válidos do choices do model Order
         valid_statuses = [choice[0] for choice in Order.STATUS_CHOICES]
         if new_status not in valid_statuses:
             return Response(
@@ -407,6 +521,8 @@ class OrderStatusView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
         
+        # Verifica se a transição do status atual para o novo é permitida
+        # Consulta o mapa VALID_TRANSITIONS com o status atual do pedido
         allowed = self.VALID_TRANSITIONS.get(order.status, [])
         if new_status not in allowed:
             return Response(

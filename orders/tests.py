@@ -67,7 +67,7 @@ class CartTests(TestCase):
         token = response.data['access']
         self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {token}')
 
-    # ✅ customer pode ver carrinho
+    # customer pode ver carrinho
     def test_get_cart_as_customer(self):
         self.authenticate_as_customer()
         response = self.client.get(self.cart_url)
@@ -75,13 +75,13 @@ class CartTests(TestCase):
         self.assertIn('items', response.data)
         self.assertIn('total', response.data)
 
-    # ❌ seller não pode acessar carrinho
+    # seller não pode acessar carrinho
     def test_get_cart_as_seller(self):
         self.authenticate_as_seller()
         response = self.client.get(self.cart_url)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
-    # ✅ customer pode adicionar item
+    # customer pode adicionar item
     def test_add_item_to_cart(self):
         self.authenticate_as_customer()
         response = self.client.post(self.cart_items_url, {
@@ -90,7 +90,7 @@ class CartTests(TestCase):
         }, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
-    # ❌ quantidade maior que estoque
+    # quantidade maior que estoque
     def test_add_item_exceeds_stock(self):
         self.authenticate_as_customer()
         response = self.client.post(self.cart_items_url, {
@@ -99,7 +99,7 @@ class CartTests(TestCase):
         }, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-    # ❌ quantidade zero não é permitida
+    # quantidade zero não é permitida
     def test_add_item_zero_quantity(self):
         self.authenticate_as_customer()
         response = self.client.post(self.cart_items_url, {
@@ -108,7 +108,7 @@ class CartTests(TestCase):
         }, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-    # ✅ adicionar mesma variação aumenta a quantidade
+    # adicionar mesma variação aumenta a quantidade
     def test_add_same_variation_increases_quantity(self):
         self.authenticate_as_customer()
         self.client.post(self.cart_items_url, {
@@ -122,7 +122,7 @@ class CartTests(TestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(response.data['quantity'], 5)
 
-    # ✅ customer pode atualizar quantidade
+    # customer pode atualizar quantidade
     def test_update_cart_item(self):
         self.authenticate_as_customer()
         self.client.post(self.cart_items_url, {
@@ -137,7 +137,7 @@ class CartTests(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['quantity'], 5)
 
-    # ✅ customer pode remover item
+    # customer pode remover item
     def test_delete_cart_item(self):
         self.authenticate_as_customer()
         self.client.post(self.cart_items_url, {
@@ -149,7 +149,7 @@ class CartTests(TestCase):
         response = self.client.delete(f'/cart/items/{item.id}/')
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
-    # ❌ seller não pode adicionar item ao carrinho
+    # seller não pode adicionar item ao carrinho
     def test_add_item_as_seller(self):
         self.authenticate_as_seller()
         response = self.client.post(self.cart_items_url, {
@@ -158,7 +158,7 @@ class CartTests(TestCase):
         }, format='json')
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
-    # ❌ não autenticado não pode acessar carrinho
+    # não autenticado não pode acessar carrinho
     def test_get_cart_unauthenticated(self):
         response = self.client.get(self.cart_url)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
@@ -240,7 +240,7 @@ class OrderTests(TestCase):
             'quantity': quantity
         }, format='json')
 
-    # ✅ cria pedido com sucesso
+    # cria pedido com sucesso
     def test_create_order_success(self):
         self.authenticate_as_customer()
         self.add_item_to_cart()
@@ -250,7 +250,7 @@ class OrderTests(TestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(response.data['status'], 'pending')
 
-    # ✅ estoque é subtraído após pedido
+    # estoque é subtraído após pedido
     def test_stock_decremented_after_order(self):
         self.authenticate_as_customer()
         self.add_item_to_cart(quantity=3)
@@ -260,7 +260,7 @@ class OrderTests(TestCase):
         self.variation.refresh_from_db()
         self.assertEqual(self.variation.stock, 7)  # 10 - 3
 
-    # ✅ carrinho limpo após pedido
+    # carrinho limpo após pedido
     def test_cart_cleared_after_order(self):
         self.authenticate_as_customer()
         self.add_item_to_cart()
@@ -270,7 +270,7 @@ class OrderTests(TestCase):
         cart = Cart.objects.get(customer=self.customer)
         self.assertEqual(cart.items.count(), 0)
 
-    # ❌ carrinho vazio não permite pedido
+    # carrinho vazio não permite pedido
     def test_create_order_empty_cart(self):
         self.authenticate_as_customer()
         response = self.client.post(self.orders_url, {
@@ -278,7 +278,7 @@ class OrderTests(TestCase):
         }, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-    # ❌ sem estoque suficiente
+    # sem estoque suficiente
     def test_create_order_insufficient_stock(self):
         self.authenticate_as_customer()
         self.add_item_to_cart(quantity=999)
@@ -287,7 +287,7 @@ class OrderTests(TestCase):
         }, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-    # ❌ seller não pode criar pedido
+    # seller não pode criar pedido
     def test_create_order_as_seller(self):
         self.authenticate_as_seller()
         response = self.client.post(self.orders_url, {
@@ -295,7 +295,7 @@ class OrderTests(TestCase):
         }, format='json')
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
-    # ❌ endereço de outro cliente não é permitido
+    # endereço de outro cliente não é permitido
     def test_create_order_with_wrong_address(self):
         self.authenticate_as_customer()
         self.add_item_to_cart()
@@ -304,7 +304,7 @@ class OrderTests(TestCase):
         }, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-    # ✅ customer pode ver seu pedido
+    # customer pode ver seu pedido
     def test_get_order_as_customer(self):
         self.authenticate_as_customer()
         self.add_item_to_cart()
@@ -315,7 +315,7 @@ class OrderTests(TestCase):
         response = self.client.get(f'/orders/{order_id}/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    # ❌ customer não pode ver pedido de outro cliente
+    # customer não pode ver pedido de outro cliente
     def test_get_order_of_another_customer(self):
         self.authenticate_as_customer()
         self.add_item_to_cart()
@@ -426,14 +426,14 @@ class OrderManagementTests(TestCase):
         token = response.data['access']
         self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {token}')
 
-    # ✅ seller pode listar pedidos
+    # seller pode listar pedidos
     def test_list_orders_as_seller(self):
         self.authenticate_as_seller()
         response = self.client.get(self.list_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn('results', response.data)
 
-    # ❌ customer não pode listar todos os pedidos
+    # customer não pode listar todos os pedidos
     def test_list_orders_as_customer(self):
         self.authenticate_as_customer()
         response = self.client.get(self.list_url)
@@ -447,7 +447,7 @@ class OrderManagementTests(TestCase):
         for order in response.data['results']:
             self.assertEqual(order['status'], 'pending')
 
-    # ✅ pedidos ordenados do mais antigo para o mais novo
+    # pedidos ordenados do mais antigo para o mais novo
     def test_list_orders_ordered_by_oldest(self):
         self.authenticate_as_seller()
         Order.objects.create(
@@ -464,7 +464,7 @@ class OrderManagementTests(TestCase):
         results = response.data['results']
         self.assertEqual(results[0]['id'], self.order.id)  # mais antigo primeiro
 
-    # ✅ seller pode atualizar status
+    # seller pode atualizar status
     def test_update_status_valid_transition(self):
         self.authenticate_as_seller()
         response = self.client.patch(self.status_url, {
@@ -473,7 +473,7 @@ class OrderManagementTests(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['status'], 'processing')
 
-    # ❌ transição inválida
+    # transição inválida
     def test_update_status_invalid_transition(self):
         self.authenticate_as_seller()
         # pending → delivered não é permitido
@@ -482,7 +482,7 @@ class OrderManagementTests(TestCase):
         }, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-    # ❌ status inexistente
+    # status inexistente
     def test_update_status_nonexistent(self):
         self.authenticate_as_seller()
         response = self.client.patch(self.status_url, {
@@ -490,7 +490,7 @@ class OrderManagementTests(TestCase):
         }, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-    # ❌ customer não pode atualizar status
+    # customer não pode atualizar status
     def test_update_status_as_customer(self):
         self.authenticate_as_customer()
         response = self.client.patch(self.status_url, {
@@ -498,7 +498,7 @@ class OrderManagementTests(TestCase):
         }, format='json')
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
-    # ✅ fluxo completo de status
+    # fluxo completo de status
     def test_full_status_flow(self):
         self.authenticate_as_seller()
         # pending → processing
@@ -510,7 +510,7 @@ class OrderManagementTests(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['status'], 'delivered')
 
-    # ❌ não pode alterar status de pedido entregue
+    # não pode alterar status de pedido entregue
     def test_cannot_update_delivered_order(self):
         self.order.status = 'delivered'
         self.order.save()
@@ -520,7 +520,7 @@ class OrderManagementTests(TestCase):
         }, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-    # ❌ não pode alterar status de pedido cancelado
+    # não pode alterar status de pedido cancelado
     def test_cannot_update_cancelled_order(self):
         self.order.status = 'cancelled'
         self.order.save()
