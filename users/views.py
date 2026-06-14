@@ -11,6 +11,7 @@ from .serializers import RegisterSerializer, LoginSerializer, ForgotPasswordSeri
 from django.core.mail import send_mail
 from django.utils import timezone
 from datetime import timedelta
+from drf_spectacular.utils import extend_schema, OpenApiExample
 import secrets
 
 class UpdateUserRoleView(APIView):
@@ -34,6 +35,59 @@ class UpdateUserRoleView(APIView):
 
         return Response({'message': f'Role atualizado para {new_role}'}, status=status.HTTP_200_OK)
 class RegisterView(APIView):
+    @extend_schema(
+        summary='Cadastra um novo usuário',
+        description=(
+            'Cria uma conta na plataforma. '
+            'O campo `role` aceita apenas `customer` no cadastro público. '
+            'A promoção para `seller` é feita por um admin via `PATCH /auth/users/:id/role/`. '
+            'A senha deve ter no mínimo 8 caracteres, '
+            'uma letra maiúscula, uma minúscula, um número e um caractere especial (`!@#$%^&*(),.?`).'
+        ),
+        request=RegisterSerializer,
+        examples=[
+            OpenApiExample(
+                'Cadastro de cliente',
+                value={
+                    'full_name': 'João Silva',
+                    'cpf': '13297456043',
+                    'email': 'joao@email.com',
+                    'phone': '84999999999',
+                    'birth_at': '2000-01-01',
+                    'role': 'customer',
+                    'password': 'Senha@123'
+                },
+                request_only=True
+            ),
+            OpenApiExample(
+                'Usuário criado com sucesso',
+                value={
+                    'message': 'Usuário criado com sucesso',
+                    'user': {
+                        'id': '947dffff-889f-4069-b488-98bb512c1f81',
+                        'full_name': 'João Silva',
+                        'email': 'joao@email.com',
+                        'role': 'customer'
+                    }
+                },
+                response_only=True,
+                status_codes=['201']
+            ),
+            OpenApiExample(
+                'Email já cadastrado',
+                value={'email': ['Email já cadastrado']},
+                response_only=True,
+                status_codes=['400']
+            ),
+            OpenApiExample(
+                'Senha fraca',
+                value={'password': ['A senha deve conter pelo menos uma letra maiúscula']},
+                response_only=True,
+                status_codes=['400']
+            ),
+        ],
+        responses={201: None, 400: None},
+    )
     def post(self, request):
         serializer = RegisterSerializer(data=request.data)
         if serializer.is_valid():
@@ -51,6 +105,42 @@ class RegisterView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 class LoginView(APIView):
+    @extend_schema(
+        summary='Realiza login e retorna tokens JWT',
+        description=(
+            'Autentica o usuário com email e senha. '
+            'Retorna um `access` token (curta duração) e um `refresh` token (longa duração). '
+            'Use o `access` no header `Authorization: Bearer <token>` em todas as requisições autenticadas. '
+            'Quando expirar, use o `refresh` em `POST /auth/token/refresh/` para renovar sem fazer login novamente.'
+        ),
+        request=LoginSerializer,
+        examples=[
+            OpenApiExample(
+                'Credenciais válidas',
+                value={
+                    'email': 'joao@email.com',
+                    'password': 'Senha@123'
+                },
+                request_only=True
+            ),
+            OpenApiExample(
+                'Login bem-sucedido',
+                value={
+                    'access': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+                    'refresh': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
+                },
+                response_only=True,
+                status_codes=['200']
+            ),
+            OpenApiExample(
+                'Credenciais inválidas',
+                value={'error': 'Email ou senha inválidos'},
+                response_only=True,
+                status_codes=['401']
+            ),
+        ],
+        responses={200: None, 400: None, 401: None},
+    )
     def post(self, request):
         serializer = LoginSerializer(data=request.data)
         if serializer.is_valid():

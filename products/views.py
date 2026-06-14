@@ -7,6 +7,7 @@ from .models import Product, Variation
 from .serializers import ProductSerializer, VariationSerializer
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
+from drf_spectacular.utils import extend_schema, OpenApiExample
 from .filters import ProductFilter
 
 class ProductViewSet(viewsets.ModelViewSet):
@@ -18,12 +19,70 @@ class ProductViewSet(viewsets.ModelViewSet):
     ordering_fields = ['price', 'created_at']
     ordering = ['-created_at']
 
+    @extend_schema(
+        summary='Cria um novo produto',
+        description=(
+            'Cria um produto associado ao lojista autenticado. '
+            '**Restrito a lojistas** (`role=seller`). '
+            'O preço deve ser maior que zero. '
+            'As variações (tamanho/cor/estoque) são gerenciadas separadamente '
+            'via `POST /products/:id/variations/`.'
+        ),
+        request=ProductSerializer,
+        examples=[
+            OpenApiExample(
+                'Criar produto',
+                value={
+                    'name': 'Camiseta Básica',
+                    'description': 'Camiseta 100% algodão',
+                    'price': '59.90',
+                    'category_id': 1,
+                    'is_active': True
+                },
+                request_only=True
+            ),
+            OpenApiExample(
+                'Produto criado',
+                value={
+                    'id': 1,
+                    'name': 'Camiseta Básica',
+                    'description': 'Camiseta 100% algodão',
+                    'price': '59.90',
+                    'is_active': True,
+                    'category': {'id': 1, 'name': 'Camisetas', 'slug': 'camisetas'},
+                    'variations': [],
+                    'created_at': '2026-06-13T10:00:00Z'
+                },
+                response_only=True,
+                status_codes=['201']
+            ),
+            OpenApiExample(
+                'Preço inválido',
+                value={'price': ['Preço deve ser maior que zero']},
+                response_only=True,
+                status_codes=['400']
+            ),
+            OpenApiExample(
+                'Sem permissão',
+                value={'detail': 'Apenas lojistas podem criar produtos'},
+                response_only=True,
+                status_codes=['403']
+            ),
+        ],
+        responses={201: ProductSerializer, 400: None, 401: None, 403: None},
+    )
+
+    def create(self, request, *args, **kwargs):
+        return super().create(request, *args, **kwargs)
+
+
     def get_queryset(self):
         user = self.request.user
         if user.role == 'seller':
             return Product.objects.all().order_by('-created_at')
         
         return Product.objects.filter(is_active=True).order_by('-created_at')
+    
     
     def perform_create(self, serializer):
         if self.request.user.role != 'seller':

@@ -262,10 +262,10 @@ python manage.py test
 
 ## Documentação da API
 
-A documentação interativa (Swagger/OpenAPI) é gerada automaticamente e pode ser acessada em:
+A documentação interativa (Swagger) está disponível em:
 
-- **Local**: `http://127.0.0.1:8000/api/docs/`
-- **Produção**: `https://<seu-usuario>.pythonanywhere.com/api/docs/`
+- Local: `http://127.0.0.1:8000/api/docs/`
+- Redoc (alternativa): `http://127.0.0.1:8000/api/redoc/`
 
 Nela você encontra a descrição de cada endpoint, parâmetros aceitos e exemplos de payload para requisições e respostas.
 

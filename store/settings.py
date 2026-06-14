@@ -33,6 +33,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'rest_framework_simplejwt',
+    'drf_spectacular',
     'django_filters',
     'anymail',
     'users',
@@ -76,7 +77,8 @@ REST_FRAMEWORK = {
         'user': '1000/hour',
         'login': '5/minute',
         'contact': '3/hour',
-    }
+    },
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
 
 MIDDLEWARE = [
@@ -107,6 +109,13 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'store.wsgi.application'
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'New Style API',
+    'DESCRIPTION': 'API REST para e-commerce de roupas — Desafio Trainee Backend EJECT',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+}
 
 
 # Database

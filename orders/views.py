@@ -6,6 +6,8 @@ from rest_framework.exceptions import PermissionDenied
 from .models import Cart, CartItem, Order, OrderItem
 from .serializers import CartSerializer, CartItemSerializer, OrderSerializer, CreateOrderSerializer
 from rest_framework.pagination import PageNumberPagination
+from drf_spectacular.utils import extend_schema, OpenApiExample, inline_serializer
+from rest_framework import serializers as drf_serializers
 from django.db import transaction
 from users.models import Address
 
@@ -22,6 +24,55 @@ class CartView(APIView):
     
 class CartItemView(APIView):
     permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        summary='Adiciona um item ao carrinho',
+        description=(
+            'Adiciona uma variação de produto ao carrinho do cliente autenticado. '
+            '**Restrito a clientes** (`role=customer`). '
+            'Se a variação já estiver no carrinho, a quantidade é **somada** '
+            '(ex: já tem 2 → adiciona 3 → fica 5). '
+            'A quantidade total não pode exceder o estoque disponível.'
+        ),
+        request=CartItemSerializer,
+        examples=[
+            OpenApiExample(
+                'Adicionar item',
+                value={'variation_id': 1, 'quantity': 2},
+                request_only=True
+            ),
+            OpenApiExample(
+                'Item adicionado',
+                value={
+                    'id': 1,
+                    'variation': {
+                        'id': 1,
+                        'size': 'M',
+                        'color': 'Azul',
+                        'product_name': 'Camiseta Básica',
+                        'price': '59.90'
+                    },
+                    'quantity': 2,
+                    'subtotal': '119.80'
+                },
+                response_only=True,
+                status_codes=['201']
+            ),
+            OpenApiExample(
+                'Estoque insuficiente',
+                value={'quantity': ['Estoque insuficiente. Disponível: 10']},
+                response_only=True,
+                status_codes=['400']
+            ),
+            OpenApiExample(
+                'Quantidade zero',
+                value={'quantity': ['Quantidade deve ser maior que zero']},
+                response_only=True,
+                status_codes=['400']
+            ),
+        ],
+        responses={201: CartItemSerializer, 400: None, 401: None, 403: None},
+    )
 
     def post(self, request):
         if request.user.role != 'customer':
@@ -93,6 +144,74 @@ class CartItemDetailView(APIView):
     
 class OrderView(APIView):
     permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        summary='Cria um pedido a partir do carrinho',
+        description=(
+            'Finaliza a compra convertendo os itens do carrinho em um pedido. '
+            '**Restrito a clientes** (`role=customer`). '
+            'O carrinho não pode estar vazio. '
+            'O endereço informado deve pertencer ao cliente autenticado. '
+            'O estoque é subtraído automaticamente e o carrinho é esvaziado. '
+            'O pedido é criado com status `pending`.'
+        ),
+        request=CreateOrderSerializer,
+        examples=[
+            OpenApiExample(
+                'Criar pedido',
+                value={'address_id': 1},
+                request_only=True
+            ),
+            OpenApiExample(
+                'Pedido criado',
+                value={
+                    'id': 1,
+                    'status': 'pending',
+                    'total': '119.80',
+                    'items': [
+                        {
+                            'id': 1,
+                            'product_name': 'Camiseta Básica',
+                            'size': 'M',
+                            'color': 'Azul',
+                            'quantity': 2,
+                            'unit_price': '59.90',
+                            'subtotal': '119.80'
+                        }
+                    ],
+                    'address_street': 'Rua das Flores',
+                    'address_number': '10',
+                    'address_complement': None,
+                    'address_neighborhood': 'Tirol',
+                    'address_city': 'Natal',
+                    'address_state': 'RN',
+                    'address_zip_code': '59020000',
+                    'created_at': '2026-06-13T10:00:00Z'
+                },
+                response_only=True,
+                status_codes=['201']
+            ),
+            OpenApiExample(
+                'Carrinho vazio',
+                value={'cart': ['Carrinho está vazio']},
+                response_only=True,
+                status_codes=['400']
+            ),
+            OpenApiExample(
+                'Estoque insuficiente',
+                value={'stock': ['Estoque insuficiente para Camiseta Básica (M/Azul). Disponível: 1']},
+                response_only=True,
+                status_codes=['400']
+            ),
+            OpenApiExample(
+                'Endereço inválido',
+                value={'address_id': ['Endereço não encontrado']},
+                response_only=True,
+                status_codes=['400']
+            ),
+        ],
+        responses={201: OrderSerializer, 400: None, 401: None, 403: None},
+    )
 
     def post(self, request):
         if request.user.role != 'customer':
@@ -197,6 +316,69 @@ class OrderStatusView(APIView):
         'delivered':  [],  # status final
         'cancelled':  [],  # status final
     }
+
+    @extend_schema(
+        summary='Atualiza o status de um pedido',
+        description=(
+            'Atualiza o status de um pedido seguindo o fluxo válido de transições. '
+            '**Restrito a lojistas** (`role=seller`). '
+            '\n\n**Fluxo permitido:**\n'
+            '- `pending` → `processing` ou `cancelled`\n'
+            '- `processing` → `shipped` ou `cancelled`\n'
+            '- `shipped` → `delivered`\n'
+            '- `delivered` e `cancelled` são **estados finais** — não podem ser alterados.'
+        ),
+        request=inline_serializer(
+            name='OrderStatusRequest',
+            fields={
+                'status': drf_serializers.ChoiceField(
+                    choices=['pending', 'processing', 'shipped', 'delivered', 'cancelled']
+                )
+            }
+        ),
+        examples=[
+            OpenApiExample(
+                'Avançar para processando',
+                value={'status': 'processing'},
+                request_only=True
+            ),
+            OpenApiExample(
+                'Cancelar pedido',
+                value={'status': 'cancelled'},
+                request_only=True
+            ),
+            OpenApiExample(
+                'Status atualizado',
+                value={
+                    'id': 1,
+                    'status': 'processing',
+                    'total': '119.80',
+                    'created_at': '2026-06-13T10:00:00Z'
+                },
+                response_only=True,
+                status_codes=['200']
+            ),
+            OpenApiExample(
+                'Transição inválida',
+                value={'error': 'Transição inválida. De "pending" só é permitido ir para: [\'processing\', \'cancelled\']'},
+                response_only=True,
+                status_codes=['400']
+            ),
+            OpenApiExample(
+                'Status inexistente',
+                value={'error': 'Status inválido. Valores permitidos: [\'pending\', \'processing\', \'shipped\', \'delivered\', \'cancelled\']'},
+                response_only=True,
+                status_codes=['400']
+            ),
+            OpenApiExample(
+                'Pedido não encontrado',
+                value={'error': 'Pedido não encontrado'},
+                response_only=True,
+                status_codes=['404']
+            ),
+        ],
+        responses={200: OrderSerializer, 400: None, 401: None, 403: None, 404: None},
+    )
 
     def patch(self,request, order_id):
         if request.user.role != 'seller':
