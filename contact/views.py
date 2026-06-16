@@ -10,6 +10,7 @@ from django.core.mail import send_mail
 from django.conf import settings
 import threading
 from .serializers import ContactSerializer
+from drf_spectacular.utils import extend_schema, OpenApiExample, inline_serializer
 
 def send_contact_email_async(name, email, subject, message):
     """
@@ -46,6 +47,10 @@ def send_contact_email_async(name, email, subject, message):
 # Não requer autenticação — qualquer pessoa pode entrar em contato.
 # ─────────────────────────────────────────────
 class ContactView(APIView):
+    @extend_schema(
+        request=ContactSerializer
+    )
+
     def post(self, request):
         # O serializer valida:
         # - Campos obrigatórios: name, email, subject, message
