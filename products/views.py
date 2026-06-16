@@ -10,7 +10,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 from .models import Product, Variation
-from .serializers import ProductSerializer, VariationSerializer
+from .serializers import ProductSerializer, VariationSerializer, VariationRegisterSerializer, ErrorResponseSerializer
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
 from drf_spectacular.utils import extend_schema, OpenApiExample
@@ -97,7 +97,6 @@ class ProductViewSet(viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
         return super().create(request, *args, **kwargs)
 
-
     def get_queryset(self):
         user = self.request.user
 
@@ -150,6 +149,31 @@ class VariationView(APIView):
             return Product.objects.get(id=product_id)
         except Product.DoesNotExist:
             return None
+
+    @extend_schema(
+        summary='Acrescentar variação ao produto',
+        description=(
+            'Acrescenta variação de tamanho e cores ao produto'
+            'Não pode repetir variação para o mesmo produto'
+        ),
+        request=VariationRegisterSerializer,
+        responses={
+            201: VariationSerializer,
+            400: ErrorResponseSerializer,
+            401: ErrorResponseSerializer
+        },
+        examples=[
+            OpenApiExample(
+                'Cartão de crédito',
+                value={
+                    "size": "M",
+                    "color": "Azul",
+                    "stock": 5
+                },
+                request_only=True
+            ),
+        ]
+    )
         
     def post(self, request, product_id):
         # Apenas lojistas podem criar variações

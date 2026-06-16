@@ -30,3 +30,14 @@ class PaymentMethodSerializer(serializers.ModelSerializer):
         if value and not value.isdigit():
             raise serializers.ValidationError('Últimos 4 dígitos devem ser numéricos')
         return value
+    
+class PaymentRegisterSerializer(serializers.Serializer):
+    id = serializers.IntegerField(read_only=True)
+    type = serializers.ChoiceField(choices=['credit_card', 'debit_card', 'pix'])
+    card_last_digits = serializers.CharField(required=False)
+    card_brand = serializers.CharField(required=False)
+    is_default = serializers.BooleanField(default=False)
+    created_at = serializers.DateTimeField(read_only=True)
+
+class ErrorResponseSerializer(serializers.Serializer):
+    detail = serializers.CharField()

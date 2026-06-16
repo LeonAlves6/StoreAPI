@@ -54,3 +54,11 @@ class ProductSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'description', 'price', 'is_active', 'category', 'category_id', 'variations', 'created_at']
         read_only_fields = ['id', 'created_at']
     
+class VariationRegisterSerializer(serializers.Serializer):
+    id = serializers.IntegerField(read_only=True)
+    size = serializers.ChoiceField(choices=['P', 'M', 'G'])
+    color = serializers.CharField()
+    stock = serializers.IntegerField()
+
+class ErrorResponseSerializer(serializers.Serializer):
+    detail = serializers.CharField()

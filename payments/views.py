@@ -10,7 +10,8 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import PermissionDenied
 from .models import PaymentMethod
-from .serializers import PaymentMethodSerializer
+from .serializers import PaymentMethodSerializer, PaymentRegisterSerializer, ErrorResponseSerializer
+from drf_spectacular.utils import extend_schema, OpenApiExample
 
 # ─────────────────────────────────────────────
 # PaymentMethodView
@@ -35,6 +36,53 @@ class PaymentMethodView(APIView):
         serializer = PaymentMethodSerializer(payment_methods, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
+    @extend_schema(
+        summary='Cadastrar método de pagamento',
+        description=(
+            'Adiciona um método de pagamento ao usuário autenticado. '
+            'Não armazena dados sensíveis completos (como número do cartão).'
+        ),
+        request=PaymentRegisterSerializer,
+        responses={
+            201: PaymentMethodSerializer,
+            400: ErrorResponseSerializer,
+            401: ErrorResponseSerializer
+        },
+        examples=[
+            OpenApiExample(
+                'Cartão de crédito',
+                value={
+                    "type": "credit_card",
+                    "last4": "1234",
+                    "brand": "visa",
+                    "is_default": True
+                },
+                request_only=True
+            ),
+            OpenApiExample(
+                'PIX',
+                value={
+                    "type": "pix",
+                    "pix_key": "cliente@email.com",
+                    "is_default": True
+                },
+                request_only=True
+            ),
+            OpenApiExample(
+                'Resposta',
+                value={
+                    "id": 1,
+                    "type": "credit_card",
+                    "last4": "1234",
+                    "brand": "visa",
+                    "is_default": True,
+                    "created_at": "2026-06-16T18:00:00Z"
+                },
+                response_only=True
+            )
+        ]
+    )
+
     def post(self, request):
         # Apenas clientes podem cadastrar métodos de pagamento
         if request.user.role != 'customer':

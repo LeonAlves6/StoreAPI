@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import User
+from .models import User, Address
 from .validators import validate_password_strength, validate_cpf, validate_phone
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -54,3 +54,36 @@ class ForgotPasswordSerializer(serializers.Serializer):
 class ResetPasswordSerializer(serializers.Serializer):
     token = serializers.CharField()
     password = serializers.CharField(write_only=True, validators=[validate_password_strength])
+
+class AddressSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Address
+        fields = [
+            'id',
+            'street',
+            'number',
+            'complement',
+            'neighborhood',
+            'city',
+            'state',
+            'zip_code',
+            'is_default',
+            'created_at'
+        ]
+        read_only_fields = ['id', 'created_at']
+
+    def validate_state(self, value):
+        if len(value) != 2:
+            raise serializers.ValidationError('Estado deve ter 2 caracteres (UF)')
+        return value.upper()
+
+    def validate_zip_code(self, value):
+        if not value.isdigit() or len(value) != 8:
+            raise serializers.ValidationError('CEP deve conter 8 dígitos numéricos')
+        return value
+
+class ErrorResponseSerializer(serializers.Serializer):
+    detail = serializers.CharField()
+
+class MessageResponseSerializer(serializers.Serializer):
+    message = serializers.CharField()

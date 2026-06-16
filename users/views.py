@@ -10,8 +10,8 @@ from django.contrib.auth import authenticate
 from django.conf import settings
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import PermissionDenied
-from users.models import User
-from .serializers import RegisterSerializer, LoginSerializer, ForgotPasswordSerializer, ResetPasswordSerializer
+from users.models import User, Address
+from .serializers import RegisterSerializer, LoginSerializer, ForgotPasswordSerializer, ResetPasswordSerializer, AddressSerializer, MessageResponseSerializer, ErrorResponseSerializer
 from django.core.mail import send_mail
 from django.utils import timezone
 from datetime import timedelta
@@ -205,6 +205,25 @@ class LoginView(APIView):
 # evitando que atacantes descubram quais emails estão cadastrados (enumeração de usuários).
 # ─────────────────────────────────────────────
 class ForgotPasswordView(APIView):
+
+    @extend_schema(
+        summary='Solicitar reset de senha',
+        description='Envia email de recuperação (sem expor existência do usuário)',
+        request=ForgotPasswordSerializer,
+        responses={200: MessageResponseSerializer},
+        examples=[
+            OpenApiExample(
+                'Request',
+                value={"email": "user@email.com"},
+                request_only=True
+            ),
+            OpenApiExample(
+                'Resposta',
+                value={"message": "Se o email existir, um link foi enviado"},
+                response_only=True
+            )
+        ]
+    )
     def post(self, request):
         serializer = ForgotPasswordSerializer(data=request.data)
         if serializer.is_valid():
@@ -250,6 +269,25 @@ class ForgotPasswordView(APIView):
 # Após uso bem-sucedido, o token é invalidado imediatamente.
 # ─────────────────────────────────────────────
 class ResetPasswordView(APIView):
+    @extend_schema(
+        summary='Resetar senha',
+        description='Define nova senha usando token',
+        request=ResetPasswordSerializer,
+        responses={
+            200: MessageResponseSerializer,
+            400: ErrorResponseSerializer
+        },
+        examples=[
+            OpenApiExample(
+                'Request',
+                value={
+                    "token": "reset_token",
+                    "password": "novaSenha123"
+                },
+                request_only=True
+            )
+        ]
+    )
     def post(self, request):
         # O serializer valida o token (campo obrigatório) e a força da nova senha
         serializer = ResetPasswordSerializer(data=request.data)
@@ -287,3 +325,89 @@ class ResetPasswordView(APIView):
             )
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class AddressCreateView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        summary='Criar endereço do usuário logado',
+        description=(
+            'Cria um novo endereço vinculado ao usuário autenticado. '
+            'O campo user não deve ser enviado no payload.'
+        ),
+        request=AddressSerializer,
+        responses={
+            201: "Endereço criado com sucesso",
+            400: "Erro de validação",
+            401: "Usuário não autenticado",
+        },
+        examples=[
+            OpenApiExample(
+                'Exemplo de criação',
+                value={
+                    "street": "Rua das Flores",
+                    "number": "123",
+                    "complement": "Apto 101",
+                    "neighborhood": "Centro",
+                    "city": "Natal",
+                    "state": "RN",
+                    "zip_code": "59000000",
+                    "is_default": True
+                },
+                request_only=True
+            ),
+            OpenApiExample(
+                'Resposta de sucesso',
+                value={
+                    "message": "Endereço cadastrado com sucesso",
+                    "address": {
+                        "id": 1,
+                        "street": "Rua das Flores",
+                        "number": "123",
+                        "complement": "Apto 101",
+                        "neighborhood": "Centro",
+                        "city": "Natal",
+                        "state": "RN",
+                        "zip_code": "59000000",
+                        "is_default": True,
+                        "created_at": "2026-06-16T12:00:00Z"
+                    }
+                },
+                response_only=True,
+                status_codes=["201"]
+            )
+        ]
+    )
+
+    def post(self, request):
+        serializer = AddressSerializer(data=request.data)
+
+        if serializer.is_valid():
+            user = request.user
+
+            # Se marcar como default, remove default anterior
+            if serializer.validated_data.get('is_default'):
+                Address.objects.filter(user=user, is_default=True).update(is_default=False)
+
+            address = serializer.save(user=user)
+
+            return Response({
+                'message': 'Endereço cadastrado com sucesso',
+                'address': AddressSerializer(address).data
+            }, status=status.HTTP_201_CREATED)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+class AddressListView(APIView):
+    permission_classes = [IsAuthenticated]
+    @extend_schema(
+        summary='Mostrar endereço',
+        description='Mostrar endereço do usuário logado',
+        responses={200: AddressSerializer(many=True)}
+    )
+
+    def get(self, request):
+        addresses = request.user.addresses.all()
+        serializer = AddressSerializer(addresses, many=True)
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
