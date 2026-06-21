@@ -1,0 +1,1118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trilha — Work, study, and stay enrolled</title>
+<meta name="description" content="Trilha matches your class schedule with flexible jobs, finds the financial aid you qualify for, and connects you with support before you're at risk of dropping out.">
+<style>
+/* ============================= TOKENS ============================= */
+:root{
+  --ink:#16223D;
+  --navy:#1B2A4A;
+  --navy-700:#24375C;
+  --navy-900:#121C32;
+  --paper:#FAFAF8;
+  --surface:#FFFFFF;
+  --border:#E5E3DA;
+  --muted:#5C6470;
+  --muted-2:#8A8F9A;
+
+  --teal:#0E9C8E;
+  --teal-50:#E2F4F1;
+  --teal-700:#0B7A70;
+
+  --amber:#C98B1E;
+  --amber-50:#FAF0DC;
+  --amber-700:#A06F17;
+
+  --coral:#E2543C;
+  --coral-50:#FBE7E2;
+  --coral-700:#B83E2A;
+
+  --font-sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --font-mono:ui-monospace,"SF Mono","Cascadia Mono","Roboto Mono",Consolas,"Liberation Mono",monospace;
+
+  --fs-h1:clamp(2.1rem,1.5rem + 2.7vw,3.6rem);
+  --fs-h2:clamp(1.6rem,1.3rem + 1.4vw,2.35rem);
+  --fs-h3:clamp(1.15rem,1.05rem + .5vw,1.4rem);
+
+  --sp-1:4px;--sp-2:8px;--sp-3:12px;--sp-4:16px;--sp-5:24px;--sp-6:32px;--sp-7:48px;--sp-8:64px;--sp-9:96px;
+
+  --radius-sm:8px;--radius-md:14px;--radius-lg:20px;
+
+  --shadow-sm:0 1px 2px rgba(22,34,61,.07);
+  --shadow-md:0 8px 24px rgba(22,34,61,.09);
+  --shadow-lg:0 24px 56px rgba(22,34,61,.14);
+
+  --ease:cubic-bezier(.2,.7,.2,1);
+}
+
+/* ============================= RESET ============================= */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{
+  font-family:var(--font-sans);
+  color:var(--ink);
+  background:var(--paper);
+  line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+}
+img,svg{display:block;max-width:100%;}
+a{color:inherit;text-decoration:none;}
+ul{list-style:none;}
+button,input{font:inherit;color:inherit;}
+button{cursor:pointer;background:none;border:none;}
+h1,h2,h3{line-height:1.12;font-weight:800;letter-spacing:-0.02em;}
+.container{max-width:1180px;margin-inline:auto;padding-inline:clamp(20px,4vw,48px);}
+
+:focus-visible{outline:2px solid var(--teal);outline-offset:3px;border-radius:4px;}
+
+.skip-link{
+  position:absolute;left:-9999px;top:0;background:var(--navy);color:#fff;padding:12px 18px;z-index:200;border-radius:0 0 8px 0;
+}
+.skip-link:focus{left:0;}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001ms !important;transition-duration:.001ms !important;}
+  html{scroll-behavior:auto;}
+}
+
+/* ============================= UTILITIES ============================= */
+.eyebrow{
+  font-family:var(--font-mono);
+  font-size:.72rem;
+  font-weight:600;
+  letter-spacing:.09em;
+  text-transform:uppercase;
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:6px 12px;
+  border-radius:999px;
+  border:1px solid currentColor;
+}
+.eyebrow--navy{color:var(--navy);}
+.eyebrow--teal{color:var(--teal-700);background:var(--teal-50);border-color:transparent;}
+.eyebrow--amber{color:var(--amber-700);background:var(--amber-50);border-color:transparent;}
+.eyebrow--coral{color:var(--coral-700);background:var(--coral-50);border-color:transparent;}
+.eyebrow--light{color:#fff;border-color:rgba(255,255,255,.4);}
+
+.mono-num{font-family:var(--font-mono);font-variant-numeric:tabular-nums;}
+
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  padding:13px 24px;border-radius:10px;font-weight:700;font-size:.95rem;
+  transition:transform .15s var(--ease),box-shadow .15s var(--ease),background .15s var(--ease);
+  white-space:nowrap;
+}
+.btn:active{transform:scale(.97);}
+.btn--primary{background:var(--navy);color:#fff;box-shadow:var(--shadow-sm);}
+.btn--primary:hover{background:var(--navy-700);box-shadow:var(--shadow-md);transform:translateY(-1px);}
+.btn--accent{background:var(--teal);color:#fff;}
+.btn--accent:hover{background:var(--teal-700);transform:translateY(-1px);box-shadow:var(--shadow-md);}
+.btn--ghost{background:transparent;color:var(--navy);border:1.5px solid var(--border);}
+.btn--ghost:hover{border-color:var(--navy);}
+.btn--light{background:#fff;color:var(--navy);}
+.btn--light:hover{background:#EFEEE8;transform:translateY(-1px);}
+.btn[disabled]{opacity:.7;cursor:default;transform:none !important;}
+.btn--sm{padding:9px 16px;font-size:.85rem;border-radius:8px;}
+
+.icon{width:18px;height:18px;flex-shrink:0;}
+
+.section-head{max-width:640px;margin-bottom:var(--sp-6);}
+.section-head h2{margin-top:14px;}
+.section-head p{color:var(--muted);margin-top:14px;font-size:1.05rem;}
+
+/* ============================= NAV ============================= */
+.nav{
+  position:sticky;top:0;z-index:100;
+  background:rgba(250,250,248,.85);
+  backdrop-filter:blur(10px);
+  border-bottom:1px solid transparent;
+  transition:border-color .25s var(--ease),box-shadow .25s var(--ease);
+}
+.nav.is-scrolled{border-color:var(--border);box-shadow:0 2px 16px rgba(22,34,61,.05);}
+.nav__inner{display:flex;align-items:center;justify-content:space-between;padding-block:16px;}
+.nav__brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:1.15rem;letter-spacing:-.01em;}
+.nav__links{display:flex;align-items:center;gap:32px;}
+.nav__link{font-size:.93rem;font-weight:600;color:var(--muted);transition:color .15s;}
+.nav__link:hover{color:var(--navy);}
+.nav__right{display:flex;align-items:center;gap:18px;}
+.nav__toggle{display:none;flex-direction:column;gap:5px;padding:8px;}
+.nav__toggle-bar{width:22px;height:2px;background:var(--navy);transition:transform .25s var(--ease),opacity .25s var(--ease);}
+.nav__toggle.is-open .nav__toggle-bar:nth-child(1){transform:translateY(7px) rotate(45deg);}
+.nav__toggle.is-open .nav__toggle-bar:nth-child(2){opacity:0;}
+.nav__toggle.is-open .nav__toggle-bar:nth-child(3){transform:translateY(-7px) rotate(-45deg);}
+
+@media (max-width:860px){
+  .nav__links{
+    position:fixed;inset:64px 0 auto 0;background:var(--surface);
+    flex-direction:column;align-items:flex-start;gap:0;padding:8px 24px 20px;
+    border-bottom:1px solid var(--border);box-shadow:var(--shadow-md);
+    transform:translateY(-12px);opacity:0;pointer-events:none;
+    transition:transform .2s var(--ease),opacity .2s var(--ease);
+  }
+  .nav__links.is-open{transform:translateY(0);opacity:1;pointer-events:auto;}
+  .nav__link{padding:14px 0;width:100%;border-bottom:1px solid var(--border);}
+  .nav__toggle{display:flex;}
+  .nav__right .btn--ghost{display:none;}
+}
+
+/* ============================= HERO ============================= */
+.hero{padding-block:var(--sp-8) var(--sp-7);overflow:hidden;}
+.hero__inner{display:grid;grid-template-columns:1.05fr 1fr;gap:var(--sp-8);align-items:center;}
+.hero__title{margin-top:18px;}
+.hero__title em{font-style:normal;color:var(--teal-700);}
+.hero__sub{margin-top:18px;font-size:1.1rem;color:var(--muted);max-width:480px;}
+.hero__actions{display:flex;gap:14px;margin-top:30px;flex-wrap:wrap;}
+.hero__trust{display:flex;align-items:center;gap:10px;margin-top:24px;font-size:.85rem;color:var(--muted-2);}
+.hero__trust .dot{width:5px;height:5px;border-radius:50%;background:var(--muted-2);}
+
+/* schedule demo card */
+.schedule-card{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);
+  box-shadow:var(--shadow-lg);padding:var(--sp-5);
+}
+.schedule-card__head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+.schedule-card__head h3{font-size:1rem;font-weight:700;}
+.schedule-card__head span{font-family:var(--font-mono);font-size:.7rem;color:var(--muted-2);text-transform:uppercase;letter-spacing:.06em;}
+
+.schedule{width:100%;border-collapse:collapse;table-layout:fixed;}
+.schedule caption{text-align:left;font-size:0;height:0;overflow:hidden;}
+.schedule th{font-family:var(--font-mono);font-size:.62rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted-2);font-weight:600;padding:4px 2px;}
+.schedule th[scope="row"]{text-align:left;padding-right:6px;}
+.schedule td{padding:3px;}
+.cell{
+  height:46px;border-radius:8px;display:flex;align-items:center;justify-content:center;text-align:center;
+  font-size:.62rem;font-weight:600;line-height:1.15;padding:2px;
+  background:#F1F0EA;color:transparent;
+  transition:background .35s var(--ease),color .35s var(--ease),transform .35s var(--ease);
+}
+.cell.is-class{background:var(--navy);color:#fff;}
+.cell.is-study{background:#fff;color:var(--ink);border:1.5px dashed #B9C2D6;}
+.cell.is-work{background:var(--teal);color:#fff;transform:scale(1.04);}
+.cell .cell-label{font-family:var(--font-mono);}
+
+.schedule-card__legend{display:flex;gap:16px;margin-top:14px;flex-wrap:wrap;}
+.legend-item{display:flex;align-items:center;gap:6px;font-size:.72rem;color:var(--muted);}
+.legend-swatch{width:10px;height:10px;border-radius:3px;}
+
+.schedule-card__cta{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  margin-top:18px;padding-top:18px;border-top:1px solid var(--border);flex-wrap:wrap;
+}
+.schedule-card__caption{
+  margin-top:14px;padding:12px 14px;background:var(--teal-50);border-radius:10px;
+  font-size:.82rem;color:var(--teal-700);font-weight:600;
+  opacity:0;max-height:0;overflow:hidden;transition:opacity .4s var(--ease),max-height .4s var(--ease),margin .4s var(--ease);
+}
+.schedule-card__caption.is-visible{opacity:1;max-height:80px;margin-top:14px;}
+
+@media (max-width:980px){
+  .hero__inner{grid-template-columns:1fr;}
+  .hero__sub{max-width:none;}
+}
+@media (max-width:560px){
+  .cell{font-size:.55rem;height:40px;}
+  .schedule th{font-size:.55rem;}
+}
+
+/* ============================= PROBLEM STRIP ============================= */
+.problem{background:var(--navy);color:#fff;padding-block:var(--sp-7);}
+.problem__inner{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--sp-6);}
+.stat__value{font-family:var(--font-mono);font-size:clamp(1.8rem,1.4rem + 1.6vw,2.6rem);font-weight:700;color:#fff;}
+.stat__label{margin-top:8px;color:rgba(255,255,255,.65);font-size:.92rem;max-width:280px;}
+@media (max-width:760px){.problem__inner{grid-template-columns:1fr;gap:var(--sp-5);}}
+
+/* ============================= FEATURE SECTIONS ============================= */
+.feature{padding-block:var(--sp-9);border-bottom:1px solid var(--border);}
+.feature__inner{display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-8);align-items:center;}
+.feature--reverse .feature__inner{direction:rtl;}
+.feature--reverse .feature__inner > *{direction:ltr;}
+.feature__copy h2{margin-top:14px;}
+.feature__copy p{color:var(--muted);margin-top:16px;font-size:1.02rem;max-width:480px;}
+@media (max-width:980px){
+  .feature__inner{grid-template-columns:1fr;}
+  .feature--reverse .feature__inner{direction:ltr;}
+}
+
+/* --- Jobs (teal) --- */
+.chips{display:flex;flex-wrap:wrap;gap:10px;margin:24px 0 22px;}
+.chip{
+  font-family:var(--font-mono);font-size:.72rem;font-weight:600;letter-spacing:.03em;
+  padding:9px 14px;border-radius:999px;border:1.5px solid var(--border);background:var(--surface);
+  transition:all .15s var(--ease);
+}
+.chip:hover{border-color:var(--teal);}
+.chip.is-active{background:var(--teal);border-color:var(--teal);color:#fff;}
+.chip--clear{color:var(--muted-2);border-style:dashed;}
+
+.job-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;}
+.job-card{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);padding:18px;
+  transition:transform .2s var(--ease),box-shadow .2s var(--ease),opacity .25s var(--ease);
+}
+.job-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-md);}
+.job-card.is-hidden{display:none;}
+.job-card__top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;}
+.job-card__role{font-weight:700;font-size:.98rem;}
+.job-card__employer{color:var(--muted);font-size:.85rem;margin-top:2px;}
+.job-card__match{font-family:var(--font-mono);font-size:.72rem;font-weight:700;color:var(--teal-700);background:var(--teal-50);padding:4px 9px;border-radius:999px;flex-shrink:0;}
+.job-card__meta{display:flex;gap:14px;margin-top:14px;font-family:var(--font-mono);font-size:.75rem;color:var(--muted);}
+.job-card__tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px;}
+.tag{font-size:.68rem;font-family:var(--font-mono);background:#F1F0EA;color:var(--muted);padding:4px 8px;border-radius:6px;}
+.job-card__bottom{display:flex;justify-content:flex-end;margin-top:14px;}
+.empty-state{grid-column:1/-1;text-align:center;padding:40px 20px;color:var(--muted-2);font-size:.9rem;}
+
+@media (max-width:700px){.job-grid{grid-template-columns:1fr;}}
+
+/* --- Aid (amber) --- */
+.seg-tabs{display:inline-flex;background:#F1F0EA;border-radius:10px;padding:4px;margin:24px 0 22px;gap:2px;}
+.seg-tab{font-size:.82rem;font-weight:600;padding:9px 16px;border-radius:8px;color:var(--muted);transition:all .15s var(--ease);}
+.seg-tab.is-active{background:var(--surface);color:var(--amber-700);box-shadow:var(--shadow-sm);}
+
+.aid-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;}
+.aid-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);padding:18px;}
+.aid-card__top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;}
+.aid-card__name{font-weight:700;font-size:.96rem;}
+.aid-card__funder{color:var(--muted);font-size:.83rem;margin-top:2px;}
+.bookmark-btn{flex-shrink:0;padding:4px;color:var(--muted-2);transition:color .15s;}
+.bookmark-btn.is-saved{color:var(--amber);}
+.aid-card__amount{font-family:var(--font-mono);font-weight:700;font-size:1.3rem;margin-top:14px;color:var(--ink);}
+.aid-card__deadline{font-size:.76rem;color:var(--coral-700);margin-top:2px;font-family:var(--font-mono);}
+.aid-card__deadline.is-open{color:var(--teal-700);}
+.match-row{display:flex;align-items:center;gap:10px;margin-top:14px;}
+.match-bar{flex:1;height:6px;background:#F1F0EA;border-radius:999px;overflow:hidden;}
+.match-bar__fill{height:100%;width:0%;background:var(--amber);border-radius:999px;transition:width 1s var(--ease);}
+.match-pct{font-family:var(--font-mono);font-size:.72rem;font-weight:700;color:var(--amber-700);min-width:32px;text-align:right;}
+.aid-card__tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px;}
+
+@media (max-width:700px){.aid-grid{grid-template-columns:1fr;}}
+
+/* --- Support (coral) --- */
+.risk-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:var(--sp-6);box-shadow:var(--shadow-md);}
+.risk-toggle{display:flex;gap:8px;margin-bottom:24px;background:#F1F0EA;padding:4px;border-radius:10px;width:fit-content;}
+.risk-toggle__btn{font-size:.8rem;font-weight:600;padding:8px 14px;border-radius:7px;color:var(--muted);}
+.risk-toggle__btn.is-active{background:var(--surface);box-shadow:var(--shadow-sm);}
+.risk-toggle__btn[data-state="low"].is-active{color:var(--teal-700);}
+.risk-toggle__btn[data-state="watch"].is-active{color:var(--amber-700);}
+.risk-toggle__btn[data-state="elevated"].is-active{color:var(--coral-700);}
+
+.risk-gauge__track{position:relative;height:8px;border-radius:999px;background:linear-gradient(90deg,var(--teal) 0%,var(--teal) 30%,var(--amber) 50%,var(--coral) 70%,var(--coral) 100%);margin:10px 0 6px;}
+.risk-gauge__marker{
+  position:absolute;top:50%;left:16%;width:18px;height:18px;border-radius:50%;background:#fff;
+  border:4px solid var(--teal);transform:translate(-50%,-50%);box-shadow:var(--shadow-sm);
+  transition:left .5s var(--ease),border-color .5s var(--ease);
+}
+.risk-gauge__labels{display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:.66rem;color:var(--muted-2);text-transform:uppercase;letter-spacing:.04em;}
+.risk-status{font-size:1.05rem;font-weight:700;margin-top:20px;transition:color .3s var(--ease);}
+.risk-status.is-low{color:var(--teal-700);}
+.risk-status.is-watch{color:var(--amber-700);}
+.risk-status.is-elevated{color:var(--coral-700);}
+
+.risk-factors{margin-top:18px;border-top:1px solid var(--border);}
+.risk-factor{display:flex;justify-content:space-between;gap:14px;padding:13px 0;border-bottom:1px solid var(--border);font-size:.86rem;}
+.risk-factor dt{color:var(--muted);}
+.risk-factor dd{font-family:var(--font-mono);font-size:.78rem;font-weight:600;text-align:right;}
+
+.risk-message{margin-top:18px;color:var(--muted);font-size:.92rem;}
+.risk-actions{margin-top:18px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+.risk-confirm{font-size:.85rem;color:var(--teal-700);font-weight:600;display:none;}
+.risk-confirm.is-visible{display:inline-flex;align-items:center;gap:6px;}
+
+/* ============================= HOW IT WORKS ============================= */
+.how{padding-block:var(--sp-9);background:var(--surface);border-bottom:1px solid var(--border);}
+.how__steps{display:grid;grid-template-columns:repeat(4,1fr);gap:var(--sp-5);margin-top:var(--sp-6);}
+.how__step{position:relative;padding-top:14px;}
+.how__step::before{content:"";position:absolute;top:0;left:0;width:100%;height:2px;background:var(--border);}
+.how__step.is-active-color::before{background:var(--teal);}
+.how__num{font-family:var(--font-mono);font-size:.78rem;color:var(--muted-2);font-weight:700;}
+.how__step h3{margin-top:10px;font-size:1.02rem;}
+.how__step p{margin-top:8px;color:var(--muted);font-size:.88rem;}
+@media (max-width:900px){.how__steps{grid-template-columns:1fr 1fr;}}
+@media (max-width:560px){.how__steps{grid-template-columns:1fr;}}
+
+/* ============================= TESTIMONIALS ============================= */
+.testimonials{padding-block:var(--sp-9);}
+.testimonial-wrap{position:relative;max-width:680px;margin:var(--sp-6) auto 0;}
+.testimonial-track{overflow:hidden;}
+.testimonial-list{display:flex;transition:transform .5s var(--ease);}
+.testimonial{flex:0 0 100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:var(--sp-6);}
+.testimonial p{font-size:1.1rem;line-height:1.55;color:var(--ink);}
+.testimonial__who{display:flex;align-items:center;gap:12px;margin-top:22px;}
+.testimonial__avatar{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:.85rem;}
+.testimonial__name{font-weight:700;font-size:.9rem;}
+.testimonial__course{font-size:.8rem;color:var(--muted);}
+.carousel-controls{display:flex;justify-content:center;align-items:center;gap:18px;margin-top:22px;}
+.carousel-arrow{width:38px;height:38px;border-radius:50%;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;transition:border-color .15s;}
+.carousel-arrow:hover{border-color:var(--navy);}
+.carousel-dots{display:flex;gap:7px;}
+.carousel-dot{width:7px;height:7px;border-radius:50%;background:var(--border);transition:background .2s,transform .2s;}
+.carousel-dot.is-active{background:var(--navy);transform:scale(1.3);}
+
+/* ============================= TRUST ============================= */
+.trust{padding-block:var(--sp-7);border-top:1px solid var(--border);border-bottom:1px solid var(--border);}
+.trust__label{text-align:center;font-family:var(--font-mono);font-size:.72rem;letter-spacing:.07em;text-transform:uppercase;color:var(--muted-2);margin-bottom:28px;}
+.trust__row{display:flex;justify-content:center;align-items:center;gap:var(--sp-7);flex-wrap:wrap;}
+.trust__badge{font-family:var(--font-mono);font-size:.85rem;letter-spacing:.02em;color:var(--muted-2);font-weight:600;}
+
+/* ============================= CTA BAND ============================= */
+.cta-band{background:var(--navy);color:#fff;padding-block:var(--sp-9);text-align:center;}
+.cta-band h2{color:#fff;max-width:640px;margin-inline:auto;}
+.cta-band p{color:rgba(255,255,255,.7);margin-top:16px;max-width:480px;margin-inline:auto;}
+.cta-form{display:flex;gap:10px;max-width:420px;margin:30px auto 0;flex-wrap:wrap;justify-content:center;}
+.cta-form input{
+  flex:1;min-width:220px;padding:13px 16px;border-radius:10px;border:1.5px solid rgba(255,255,255,.25);
+  background:rgba(255,255,255,.08);color:#fff;
+}
+.cta-form input::placeholder{color:rgba(255,255,255,.5);}
+.cta-form input:focus{outline:none;border-color:#fff;background:rgba(255,255,255,.14);}
+.cta-error{color:#FFC9BD;font-size:.8rem;margin-top:10px;display:none;}
+.cta-error.is-visible{display:block;}
+.cta-success{
+  max-width:420px;margin:30px auto 0;padding:18px 20px;background:rgba(255,255,255,.1);
+  border:1px solid rgba(255,255,255,.25);border-radius:12px;display:none;font-size:.9rem;
+}
+.cta-success.is-visible{display:block;}
+.cta-band__secondary{margin-top:22px;font-size:.85rem;color:rgba(255,255,255,.55);}
+.cta-band__secondary a{text-decoration:underline;text-underline-offset:3px;}
+.cta-band__secondary a:hover{color:#fff;}
+
+/* ============================= FOOTER ============================= */
+.footer{padding-block:var(--sp-8) var(--sp-6);}
+.footer__top{display:grid;grid-template-columns:1.4fr repeat(3,1fr);gap:var(--sp-6);padding-bottom:var(--sp-7);}
+.footer__brand-desc{color:var(--muted);font-size:.88rem;margin-top:14px;max-width:260px;}
+.footer__col h4{font-size:.78rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted-2);font-family:var(--font-mono);margin-bottom:14px;}
+.footer__col a{display:block;color:var(--muted);font-size:.88rem;padding:6px 0;transition:color .15s;}
+.footer__col a:hover{color:var(--navy);}
+.footer__bottom{border-top:1px solid var(--border);padding-top:var(--sp-5);display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;color:var(--muted-2);font-size:.78rem;}
+@media (max-width:860px){.footer__top{grid-template-columns:1fr 1fr;}}
+@media (max-width:540px){.footer__top{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<!-- ============================= NAV ============================= -->
+<header class="nav" id="siteNav">
+  <div class="container nav__inner">
+    <a href="#main" class="nav__brand" aria-label="Trilha home">
+      <svg class="icon" width="26" height="26" viewBox="0 0 26 26" fill="none" aria-hidden="true">
+        <rect width="26" height="26" rx="7" fill="#1B2A4A"/>
+        <circle cx="7" cy="18" r="2" fill="#fff"/>
+        <circle cx="13" cy="9" r="2" fill="#fff"/>
+        <circle cx="19" cy="18" r="2" fill="#0E9C8E"/>
+        <path d="M7 18L13 9L19 18" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      Trilha
+    </a>
+
+    <nav class="nav__links" id="navLinks" aria-label="Primary">
+      <a class="nav__link" href="#jobs">Jobs</a>
+      <a class="nav__link" href="#aid">Scholarships</a>
+      <a class="nav__link" href="#support">Support</a>
+      <a class="nav__link" href="#how">How it works</a>
+    </nav>
+
+    <div class="nav__right">
+      <a href="#start" class="btn btn--ghost btn--sm">Log in</a>
+      <a href="#start" class="btn btn--primary btn--sm">Get started</a>
+      <button class="nav__toggle" id="navToggle" aria-label="Toggle menu" aria-expanded="false" aria-controls="navLinks">
+        <span class="nav__toggle-bar"></span><span class="nav__toggle-bar"></span><span class="nav__toggle-bar"></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+  <!-- ============================= HERO ============================= -->
+  <section class="hero">
+    <div class="container hero__inner">
+      <div class="hero__copy">
+        <span class="eyebrow eyebrow--navy">For students working their way through school</span>
+        <h1 class="hero__title">Your degree shouldn't have to compete with <em>rent</em>.</h1>
+        <p class="hero__sub">Trilha fits flexible jobs around your class schedule, finds the financial aid you actually qualify for, and connects you with support before things become a crisis.</p>
+        <div class="hero__actions">
+          <a href="#start" class="btn btn--primary">Get matched — it's free</a>
+          <a href="#how" class="btn btn--ghost">See how it works</a>
+        </div>
+        <div class="hero__trust">
+          <span>Free for students</span><span class="dot"></span><span>No ads, ever</span><span class="dot"></span><span>Built with student affairs offices</span>
+        </div>
+      </div>
+
+      <div class="hero__demo">
+        <div class="schedule-card">
+          <div class="schedule-card__head">
+            <h3>This week</h3>
+            <span>Live preview</span>
+          </div>
+
+          <table class="schedule" aria-describedby="scheduleDesc">
+            <caption id="scheduleDesc">Weekly schedule showing class time, free time, and a matched job fit into the gaps</caption>
+            <thead>
+              <tr><th scope="col"></th><th scope="col">Mon</th><th scope="col">Tue</th><th scope="col">Wed</th><th scope="col">Thu</th><th scope="col">Fri</th><th scope="col">Sat</th><th scope="col">Sun</th></tr>
+            </thead>
+            <tbody id="scheduleBody"><!-- rendered by JS --></tbody>
+          </table>
+
+          <div class="schedule-card__legend">
+            <span class="legend-item"><span class="legend-swatch" style="background:var(--navy)"></span>Class</span>
+            <span class="legend-item"><span class="legend-swatch" style="background:var(--teal)"></span>Matched job</span>
+            <span class="legend-item"><span class="legend-swatch" style="background:#fff;border:1.5px dashed #B9C2D6"></span>Study block</span>
+          </div>
+
+          <div class="schedule-card__cta">
+            <span style="font-size:.82rem;color:var(--muted)">3 free blocks open this week</span>
+            <button class="btn btn--accent btn--sm" id="matchBtn">Find a job that fits →</button>
+          </div>
+          <p class="schedule-card__caption" id="matchCaption"></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================= PROBLEM STRIP ============================= -->
+  <section class="problem" aria-label="Why this matters">
+    <div class="container problem__inner">
+      <div>
+        <div class="stat__value"><span class="counter" data-target="33" data-suffix="%">33%</span></div>
+        <p class="stat__label">of low-income students who leave college say a job schedule conflict was a major factor</p>
+      </div>
+      <div>
+        <div class="stat__value">$<span class="counter" data-target="7400" data-suffix="">7,400</span></div>
+        <p class="stat__label">in aid goes unclaimed per eligible student each year, simply because they never found it</p>
+      </div>
+      <div>
+        <div class="stat__value"><span class="counter" data-target="6" data-suffix=" wks">6 wks</span></div>
+        <p class="stat__label">average time between first warning signs and dropping out — Trilha flags it in days</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================= FEATURE: JOBS ============================= -->
+  <section class="feature" id="jobs" aria-labelledby="jobsHeading">
+    <div class="container">
+      <div class="section-head">
+        <span class="eyebrow eyebrow--teal">Cooperative</span>
+        <h2 id="jobsHeading">Find jobs that work around your classes — not the other way around.</h2>
+        <p>Every listing is screened for schedule flexibility by real employers and campus partners. Filter by what you actually need, and see exactly how well a shift fits before you apply.</p>
+      </div>
+
+      <div>
+        <div class="chips" id="jobChips" role="group" aria-label="Filter jobs">
+          <button class="chip" data-tag="remote">Remote</button>
+          <button class="chip" data-tag="campus">On-campus</button>
+          <button class="chip" data-tag="weekend">Weekends</button>
+          <button class="chip" data-tag="evening">Evenings</button>
+          <button class="chip" data-tag="short">≤15 hrs/week</button>
+          <button class="chip chip--clear" id="jobClear">Clear filters</button>
+        </div>
+
+        <div class="job-grid" id="jobGrid"><!-- rendered by JS --></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================= FEATURE: AID ============================= -->
+  <section class="feature" id="aid" aria-labelledby="aidHeading">
+    <div class="container">
+      <div class="section-head">
+        <span class="eyebrow eyebrow--amber">Financial aid</span>
+        <h2 id="aidHeading">Stop guessing which scholarships you qualify for.</h2>
+        <p>Trilha checks your profile against thousands of scholarships, grants, and emergency funds, then ranks them by how well you match and how soon they close.</p>
+      </div>
+
+      <div>
+        <div class="seg-tabs" id="aidTabs" role="tablist" aria-label="Sort scholarships">
+          <button class="seg-tab is-active" data-sort="best" role="tab" aria-selected="true">Best match</button>
+          <button class="seg-tab" data-sort="closing" role="tab" aria-selected="false">Closing soon</button>
+          <button class="seg-tab" data-sort="emergency" role="tab" aria-selected="false">Emergency funds</button>
+        </div>
+
+        <div class="aid-grid" id="aidGrid"><!-- rendered by JS --></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================= FEATURE: SUPPORT ============================= -->
+  <section class="feature feature--reverse" id="support" aria-labelledby="supportHeading">
+    <div class="container feature__inner">
+      <div class="feature__copy">
+        <span class="eyebrow eyebrow--coral">Early support</span>
+        <h2 id="supportHeading">We notice the warning signs before you have to ask for help.</h2>
+        <p>A light, opt-in check-in every couple weeks — never graded, never shared without your consent. If things get harder, your advisor reaches out first. This is what a student sees on their own dashboard, not a tool anyone is watching you through.</p>
+      </div>
+
+      <div>
+        <div class="risk-card">
+          <div class="risk-toggle" role="group" aria-label="Preview a risk level">
+            <button class="risk-toggle__btn is-active" data-state="low">Low</button>
+            <button class="risk-toggle__btn" data-state="watch">Watch</button>
+            <button class="risk-toggle__btn" data-state="elevated">Elevated</button>
+          </div>
+
+          <div class="risk-gauge__track">
+            <div class="risk-gauge__marker" id="riskMarker"></div>
+          </div>
+          <div class="risk-gauge__labels"><span>Low</span><span>Watch</span><span>Elevated</span></div>
+
+          <p class="risk-status is-low" id="riskStatus">You're on track</p>
+
+          <dl class="risk-factors" id="riskFactors"><!-- rendered by JS --></dl>
+
+          <p class="risk-message" id="riskMessage"></p>
+
+          <div class="risk-actions">
+            <button class="btn btn--primary btn--sm" id="riskBtn">Talk to your advisor</button>
+            <span class="risk-confirm" id="riskConfirm">
+              <svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              Request sent — Maria from Student Success will reach out within 1 business day
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================= HOW IT WORKS ============================= -->
+  <section class="how" id="how" aria-labelledby="howHeading">
+    <div class="container">
+      <div class="section-head">
+        <span class="eyebrow eyebrow--navy">How it works</span>
+        <h2 id="howHeading">Four steps. About five minutes.</h2>
+      </div>
+      <div class="how__steps">
+        <div class="how__step">
+          <span class="how__num">01</span>
+          <h3>Tell us your schedule</h3>
+          <p>Class times, hours you can realistically work, and your financial situation. Private by default.</p>
+        </div>
+        <div class="how__step">
+          <span class="how__num">02</span>
+          <h3>Get matched</h3>
+          <p>Flexible jobs and scholarships ranked for you, refreshed every week as new ones open up.</p>
+        </div>
+        <div class="how__step">
+          <span class="how__num">03</span>
+          <h3>Check in lightly</h3>
+          <p>A 30-second pulse every couple weeks. Never graded, never shared without your consent.</p>
+        </div>
+        <div class="how__step">
+          <span class="how__num">04</span>
+          <h3>Get support early</h3>
+          <p>If things get tight, your advisor reaches out before it turns into a reason to leave.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================= TESTIMONIALS ============================= -->
+  <section class="testimonials" aria-labelledby="storiesHeading">
+    <div class="container">
+      <div class="section-head" style="margin-inline:auto;text-align:center">
+        <span class="eyebrow eyebrow--navy">Student stories</span>
+        <h2 id="storiesHeading">Built around real semesters, not ideal ones.</h2>
+      </div>
+
+      <div class="testimonial-wrap">
+        <div class="testimonial-track">
+          <ul class="testimonial-list" id="testimonialList">
+            <li class="testimonial">
+              <p>"I almost turned down a job because the hours looked like they'd clash with clinicals. Trilha showed me one two blocks from campus that didn't — I kept both."</p>
+              <div class="testimonial__who">
+                <span class="testimonial__avatar" style="background:var(--teal)">AS</span>
+                <div><div class="testimonial__name">Ana S.</div><div class="testimonial__course">Nursing, 2nd year</div></div>
+              </div>
+            </li>
+            <li class="testimonial">
+              <p>"There was a $1,200 grant for first-gen students sitting there the whole time. I just didn't know it existed until it showed up as a match."</p>
+              <div class="testimonial__who">
+                <span class="testimonial__avatar" style="background:var(--amber)">MC</span>
+                <div><div class="testimonial__name">Marcos C.</div><div class="testimonial__course">Computer Science, 3rd year</div></div>
+              </div>
+            </li>
+            <li class="testimonial">
+              <p>"My advisor messaged me before I even asked for help. That semester I was one missed deadline away from withdrawing, and someone actually noticed."</p>
+              <div class="testimonial__who">
+                <span class="testimonial__avatar" style="background:var(--coral)">JM</span>
+                <div><div class="testimonial__name">Júlia M.</div><div class="testimonial__course">Business, 1st year</div></div>
+              </div>
+            </li>
+          </ul>
+        </div>
+
+        <div class="carousel-controls">
+          <button class="carousel-arrow" id="prevTest" aria-label="Previous story">
+            <svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+          </button>
+          <div class="carousel-dots" id="testDots"></div>
+          <button class="carousel-arrow" id="nextTest" aria-label="Next story">
+            <svg class="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================= TRUST ============================= -->
+  <section class="trust" aria-label="Institutional partners">
+    <div class="container">
+      <p class="trust__label">Piloted with student affairs &amp; financial aid offices at</p>
+      <div class="trust__row">
+        <span class="trust__badge">Riverstate University — Financial Aid</span>
+        <span class="trust__badge">Cohort Partners Network</span>
+        <span class="trust__badge">OpenAid Foundation</span>
+        <span class="trust__badge">Bright Path Nonprofit</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================= FINAL CTA ============================= -->
+  <section class="cta-band" id="start" aria-labelledby="ctaHeading">
+    <div class="container">
+      <h2 id="ctaHeading">Don't let a job decide whether you finish your degree.</h2>
+      <p>Trilha is free for students. Set up your profile in under five minutes.</p>
+
+      <form class="cta-form" id="ctaForm" novalidate>
+        <label for="ctaEmail" class="visually-hidden" style="position:absolute;left:-9999px">Email address</label>
+        <input type="email" id="ctaEmail" placeholder="you@email.com" autocomplete="email" required>
+        <button type="submit" class="btn btn--light">Get started</button>
+      </form>
+      <p class="cta-error" id="ctaError">Enter a valid email so we know where to send next steps.</p>
+      <div class="cta-success" id="ctaSuccess" tabindex="-1"></div>
+
+      <p class="cta-band__secondary">Are you a university, employer, or funder? <a href="#main">Partner with Trilha →</a></p>
+    </div>
+  </section>
+</main>
+
+<!-- ============================= FOOTER ============================= -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer__top">
+      <div>
+        <a href="#main" class="nav__brand" aria-label="Trilha home">
+          <svg class="icon" width="24" height="24" viewBox="0 0 26 26" fill="none" aria-hidden="true">
+            <rect width="26" height="26" rx="7" fill="#1B2A4A"/>
+            <circle cx="7" cy="18" r="2" fill="#fff"/><circle cx="13" cy="9" r="2" fill="#fff"/><circle cx="19" cy="18" r="2" fill="#0E9C8E"/>
+            <path d="M7 18L13 9L19 18" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Trilha
+        </a>
+        <p class="footer__brand-desc">Helping working students stay enrolled — one schedule, one scholarship, one check-in at a time.</p>
+      </div>
+      <div class="footer__col">
+        <h4>Product</h4>
+        <a href="#jobs">Jobs</a><a href="#aid">Scholarships</a><a href="#support">Early support</a><a href="#how">How it works</a>
+      </div>
+      <div class="footer__col">
+        <h4>Students</h4>
+        <a href="#main">FAQ</a><a href="#main">Privacy</a><a href="#main">Your data</a>
+      </div>
+      <div class="footer__col">
+        <h4>Partners</h4>
+        <a href="#main">Universities</a><a href="#main">Employers</a><a href="#main">Funders</a>
+      </div>
+    </div>
+    <div class="footer__bottom">
+      <span>© 2026 Trilha. A student-success prototype.</span>
+      <span>All listings, figures, and names on this page are illustrative mockups.</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  "use strict";
+  var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // Run each feature module independently so a problem in one
+  // (a missing element, a future edit, an unsupported API) can't
+  // take down the rest of the page's interactivity.
+  function safe(name, fn){
+    try { fn(); } catch (err){ console.error('[Trilha] ' + name + ' failed to init:', err); }
+  }
+
+  function qsaForEach(list, fn){
+    Array.prototype.forEach.call(list, fn);
+  }
+
+  /* ============================= NAV ============================= */
+  function initNav(){
+    var nav = document.getElementById('siteNav');
+    window.addEventListener('scroll', function(){
+      nav.classList.toggle('is-scrolled', window.scrollY > 8);
+    }, { passive:true });
+
+    var navToggle = document.getElementById('navToggle');
+    var navLinks = document.getElementById('navLinks');
+    navToggle.addEventListener('click', function(){
+      var open = navLinks.classList.toggle('is-open');
+      navToggle.classList.toggle('is-open', open);
+      navToggle.setAttribute('aria-expanded', open);
+    });
+    qsaForEach(navLinks.querySelectorAll('a'), function(a){
+      a.addEventListener('click', function(){
+        navLinks.classList.remove('is-open');
+        navToggle.classList.remove('is-open');
+        navToggle.setAttribute('aria-expanded', 'false');
+      });
+    });
+  }
+
+  /* ============================= COUNTERS ============================= */
+  function initCounters(){
+    var counters = document.querySelectorAll('.counter');
+
+    function animateCounter(el){
+      var target = parseFloat(el.dataset.target);
+      var suffix = el.dataset.suffix || '';
+      if (reduceMotion){ el.textContent = target.toLocaleString('en-US') + suffix; return; }
+      var duration = 1200, startTime = null;
+      function step(ts){
+        if (!startTime) startTime = ts;
+        var progress = Math.min((ts - startTime) / duration, 1);
+        var eased = 1 - Math.pow(1 - progress, 3);
+        var value = Math.round(target * eased);
+        el.textContent = value.toLocaleString('en-US') + suffix;
+        if (progress < 1) requestAnimationFrame(step);
+      }
+      requestAnimationFrame(step);
+    }
+
+    if ('IntersectionObserver' in window){
+      var counterIO = new IntersectionObserver(function(entries){
+        entries.forEach(function(entry){
+          if (entry.isIntersecting){
+            animateCounter(entry.target);
+            counterIO.unobserve(entry.target);
+          }
+        });
+      }, { threshold:.5 });
+      qsaForEach(counters, function(c){ counterIO.observe(c); });
+    }
+    // No-JS / unsupported-API users still see the correct static
+    // values, since each .counter span's initial textContent is
+    // already the real number.
+  }
+
+  /* ============================= HERO SCHEDULE DEMO ============================= */
+  function initHeroSchedule(){
+    var days = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+    var slots = ['AM','PM','EVE'];
+    var base = [
+      [{t:'class',l:'Calc I'}, {t:'free'}, {t:'free'}],
+      [{t:'free'}, {t:'class',l:'Lab'}, {t:'free'}],
+      [{t:'class',l:'Calc I'}, {t:'free'}, {t:'study',l:'Study'}],
+      [{t:'free'}, {t:'class',l:'Lab'}, {t:'free'}],
+      [{t:'class',l:'Seminar'}, {t:'free'}, {t:'free'}],
+      [{t:'free'}, {t:'free'}, {t:'free'}],
+      [{t:'free'}, {t:'free'}, {t:'free'}]
+    ];
+    var scenarios = [
+      { cells:[[1,2],[3,2]], caption:'Matched: Campus Tutoring · Tue & Thu evenings · $16/hr — zero conflicts with your classes.', label:'Tutor' },
+      { cells:[[5,0],[6,0]], caption:'Matched: Café Shift · Sat & Sun mornings · $12/hr — weekend-only, no class overlap.', label:'Café' },
+      { cells:[[0,1],[2,1],[4,1]], caption:'Matched: Remote Support · Mon/Wed/Fri afternoons · $15/hr — fits right between classes.', label:'Remote' }
+    ];
+    var scheduleBody = document.getElementById('scheduleBody');
+    var scenarioIndex = -1;
+
+    function renderSchedule(){
+      var rowsHtml = '';
+      slots.forEach(function(slotName, slotIdx){
+        rowsHtml += '<tr><th scope="row">' + slotName + '</th>';
+        days.forEach(function(dayName, dayIdx){
+          var cell = base[dayIdx][slotIdx];
+          rowsHtml += '<td><div class="cell is-' + cell.t + '" data-cell="' + dayIdx + '-' + slotIdx + '">' +
+            (cell.l ? '<span class="cell-label">' + cell.l + '</span>' : '') + '</div></td>';
+        });
+        rowsHtml += '</tr>';
+      });
+      scheduleBody.innerHTML = rowsHtml;
+    }
+    renderSchedule();
+
+    var matchBtn = document.getElementById('matchBtn');
+    var matchCaption = document.getElementById('matchCaption');
+    matchBtn.addEventListener('click', function(){
+      scenarioIndex = (scenarioIndex + 1) % scenarios.length;
+      qsaForEach(document.querySelectorAll('#scheduleBody .cell.is-work'), function(cell){
+        cell.classList.remove('is-work');
+        var coords = cell.dataset.cell.split('-');
+        var original = base[coords[0]][coords[1]];
+        cell.innerHTML = original.l ? '<span class="cell-label">' + original.l + '</span>' : '';
+      });
+      var scenario = scenarios[scenarioIndex];
+      scenario.cells.forEach(function(coord){
+        var cell = document.querySelector('[data-cell="' + coord[0] + '-' + coord[1] + '"]');
+        if (cell){
+          cell.classList.add('is-work');
+          cell.innerHTML = '<span class="cell-label">' + scenario.label + '</span>';
+        }
+      });
+      matchCaption.textContent = scenario.caption;
+      matchCaption.classList.add('is-visible');
+      matchBtn.textContent = 'Show me another match →';
+    });
+  }
+
+  /* ============================= JOBS ============================= */
+  function initJobs(){
+    var jobs = [
+      { role:'Library Assistant', employer:'Campus Library', pay:'$13/hr', hrs:'10 hrs/wk', match:98, tags:['campus','evening','short'] },
+      { role:'Remote Customer Support', employer:'Northwind Retail', pay:'$15/hr', hrs:'12 hrs/wk', match:94, tags:['remote','evening','short'] },
+      { role:'Weekend Barista', employer:'Café Lumen', pay:'$12/hr', hrs:'8 hrs/wk', match:91, tags:['weekend','campus','short'] },
+      { role:'Online Math Tutor', employer:'Trilha Tutoring Network', pay:'$18/hr', hrs:'6 hrs/wk', match:99, tags:['remote','evening','short'] },
+      { role:'Event Staff', employer:'Student Union', pay:'$14/hr', hrs:'5 hrs/wk', match:87, tags:['weekend','campus','short'] },
+      { role:'Data Entry (Remote)', employer:'Bright Path Nonprofit', pay:'$13/hr', hrs:'10 hrs/wk', match:90, tags:['remote','short'] }
+    ];
+    var tagLabels = { remote:'Remote', campus:'On-campus', weekend:'Weekends', evening:'Evenings', short:'≤15 hrs/wk' };
+    var jobGrid = document.getElementById('jobGrid');
+
+    function renderJobs(){
+      jobGrid.innerHTML = jobs.map(function(job, i){
+        return '<article class="job-card" data-tags="' + job.tags.join(' ') + '">' +
+          '<div class="job-card__top">' +
+            '<div><div class="job-card__role">' + job.role + '</div><div class="job-card__employer">' + job.employer + '</div></div>' +
+            '<span class="job-card__match">' + job.match + '% match</span>' +
+          '</div>' +
+          '<div class="job-card__meta"><span>' + job.pay + '</span><span>' + job.hrs + '</span></div>' +
+          '<div class="job-card__tags">' + job.tags.map(function(t){ return '<span class="tag">' + tagLabels[t] + '</span>'; }).join('') + '</div>' +
+          '<div class="job-card__bottom"><button class="btn btn--ghost btn--sm apply-btn" data-idx="' + i + '">Apply</button></div>' +
+        '</article>';
+      }).join('');
+    }
+    renderJobs();
+
+    jobGrid.addEventListener('click', function(e){
+      var btn = e.target.closest('.apply-btn');
+      if (!btn) return;
+      btn.textContent = 'Applied';
+      btn.classList.remove('btn--ghost');
+      btn.classList.add('btn--accent');
+      btn.disabled = true;
+    });
+
+    var activeTags = [];
+    var jobChips = document.getElementById('jobChips');
+
+    function filterJobs(){
+      var cards = jobGrid.querySelectorAll('.job-card');
+      var visibleCount = 0;
+      qsaForEach(cards, function(card){
+        var cardTags = card.dataset.tags.split(' ');
+        var matches = activeTags.every(function(t){ return cardTags.indexOf(t) > -1; });
+        card.classList.toggle('is-hidden', !matches);
+        if (matches) visibleCount++;
+      });
+      var existingEmpty = jobGrid.querySelector('.empty-state');
+      if (visibleCount === 0 && !existingEmpty){
+        var div = document.createElement('div');
+        div.className = 'empty-state';
+        div.textContent = 'No openings match all of those filters yet — try clearing one.';
+        jobGrid.appendChild(div);
+      } else if (visibleCount > 0 && existingEmpty){
+        existingEmpty.remove();
+      }
+    }
+
+    qsaForEach(jobChips.querySelectorAll('.chip[data-tag]'), function(chip){
+      chip.addEventListener('click', function(){
+        var tag = chip.dataset.tag;
+        var idx = activeTags.indexOf(tag);
+        if (idx > -1){ activeTags.splice(idx,1); chip.classList.remove('is-active'); }
+        else { activeTags.push(tag); chip.classList.add('is-active'); }
+        filterJobs();
+      });
+    });
+    document.getElementById('jobClear').addEventListener('click', function(){
+      activeTags = [];
+      qsaForEach(jobChips.querySelectorAll('.chip[data-tag]'), function(c){ c.classList.remove('is-active'); });
+      filterJobs();
+    });
+  }
+
+  /* ============================= AID ============================= */
+  function initAid(){
+    var scholarships = [
+      { name:'Community Futures Grant', funder:'Trilha Partner Fund', amount:2500, days:12, match:96, type:'needbased', tags:['Need-based','Any major'] },
+      { name:'First-Gen Trailblazer Scholarship', funder:'State University Foundation', amount:1200, days:28, match:89, type:'merit', tags:['First-gen','GPA 3.0+'] },
+      { name:'Emergency Tuition Bridge', funder:'Trilha Emergency Fund', amount:800, days:0, match:91, type:'emergency', tags:['Rolling','Any year'] },
+      { name:'Women in STEM Award', funder:'TechForward Foundation', amount:3000, days:45, match:78, type:'merit', tags:['STEM major','Women'] },
+      { name:'Working Student Relief Grant', funder:'National Aid Coalition', amount:1500, days:9, match:93, type:'needbased', tags:['Working 15+ hrs','Any major'] },
+      { name:'Housing Stability Microgrant', funder:'Trilha Emergency Fund', amount:600, days:0, match:85, type:'emergency', tags:['Rolling','Housing need'] }
+    ];
+    var aidGrid = document.getElementById('aidGrid');
+    var savedScholarships = {};
+
+    function renderAid(list){
+      aidGrid.innerHTML = list.map(function(s){
+        var deadlineText = s.days === 0 ? 'Open now · rolling' : s.days + ' days left';
+        var deadlineClass = s.days === 0 ? 'is-open' : '';
+        var saved = savedScholarships[s.name];
+        return '<article class="aid-card">' +
+          '<div class="aid-card__top">' +
+            '<div><div class="aid-card__name">' + s.name + '</div><div class="aid-card__funder">' + s.funder + '</div></div>' +
+            '<button class="bookmark-btn' + (saved ? ' is-saved' : '') + '" data-name="' + s.name + '" aria-label="Save scholarship">' +
+              '<svg class="icon" width="18" height="18" viewBox="0 0 24 24" fill="' + (saved ? 'currentColor' : 'none') + '" stroke="currentColor" stroke-width="1.8"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>' +
+            '</button>' +
+          '</div>' +
+          '<div class="aid-card__amount">$' + s.amount.toLocaleString('en-US') + '</div>' +
+          '<div class="aid-card__deadline ' + deadlineClass + '">' + deadlineText + '</div>' +
+          '<div class="match-row"><div class="match-bar"><div class="match-bar__fill" data-pct="' + s.match + '"></div></div><span class="match-pct">' + s.match + '%</span></div>' +
+          '<div class="aid-card__tags">' + s.tags.map(function(t){ return '<span class="tag">' + t + '</span>'; }).join('') + '</div>' +
+        '</article>';
+      }).join('');
+
+      requestAnimationFrame(function(){
+        requestAnimationFrame(function(){
+          qsaForEach(aidGrid.querySelectorAll('.match-bar__fill'), function(bar){
+            bar.style.width = bar.dataset.pct + '%';
+          });
+        });
+      });
+    }
+    renderAid(scholarships);
+
+    aidGrid.addEventListener('click', function(e){
+      var btn = e.target.closest('.bookmark-btn');
+      if (!btn) return;
+      var name = btn.dataset.name;
+      savedScholarships[name] = !savedScholarships[name];
+      btn.classList.toggle('is-saved', savedScholarships[name]);
+      btn.querySelector('svg').setAttribute('fill', savedScholarships[name] ? 'currentColor' : 'none');
+    });
+
+    var aidTabs = document.getElementById('aidTabs');
+    qsaForEach(aidTabs.querySelectorAll('.seg-tab'), function(tab){
+      tab.addEventListener('click', function(){
+        qsaForEach(aidTabs.querySelectorAll('.seg-tab'), function(t){ t.classList.remove('is-active'); t.setAttribute('aria-selected','false'); });
+        tab.classList.add('is-active');
+        tab.setAttribute('aria-selected','true');
+        var sort = tab.dataset.sort;
+        var list;
+        if (sort === 'best'){ list = scholarships.slice().sort(function(a,b){ return b.match - a.match; }); }
+        else if (sort === 'closing'){ list = scholarships.filter(function(s){ return s.days > 0; }).sort(function(a,b){ return a.days - b.days; }); }
+        else { list = scholarships.filter(function(s){ return s.type === 'emergency'; }); }
+        renderAid(list);
+      });
+    });
+  }
+
+  /* ============================= SUPPORT / RISK ============================= */
+  function initSupport(){
+    var riskStates = {
+      low:{ pos:'16%', color:'var(--teal)', statusClass:'is-low', status:'You\'re on track',
+        factors:[ ['Attendance this month','Steady — 95%'], ['Last check-in','3 days ago · "feeling good"'], ['Financial flag','None active'] ],
+        message:'No action needed. Keep up your check-ins and we\'ll keep matching you with opportunities.' },
+      watch:{ pos:'50%', color:'var(--amber)', statusClass:'is-watch', status:'A few signs of strain',
+        factors:[ ['Attendance this month','Dipped — 78%'], ['Last check-in','6 days ago · "feeling stretched thin"'], ['Financial flag','Scholarship application pending'] ],
+        message:'Nothing urgent yet, but it might help to talk it through with your advisor before it builds up.' },
+      elevated:{ pos:'84%', color:'var(--coral)', statusClass:'is-elevated', status:'We\'d like to check in',
+        factors:[ ['Attendance this month','Down sharply — 52%'], ['Last check-in','No response in 12 days'], ['Financial flag','Emergency aid requested'] ],
+        message:'We\'d like to connect you with support now — no judgment, just help getting back on track.' }
+    };
+    var riskMarker = document.getElementById('riskMarker');
+    var riskStatus = document.getElementById('riskStatus');
+    var riskFactors = document.getElementById('riskFactors');
+    var riskMessage = document.getElementById('riskMessage');
+    var riskBtn = document.getElementById('riskBtn');
+    var riskConfirm = document.getElementById('riskConfirm');
+
+    function setRiskState(stateKey){
+      var s = riskStates[stateKey];
+      riskMarker.style.left = s.pos;
+      riskMarker.style.borderColor = s.color;
+      riskStatus.textContent = s.status;
+      riskStatus.className = 'risk-status ' + s.statusClass;
+      riskFactors.innerHTML = s.factors.map(function(f){
+        return '<div class="risk-factor"><dt>' + f[0] + '</dt><dd>' + f[1] + '</dd></div>';
+      }).join('');
+      riskMessage.textContent = s.message;
+      riskBtn.disabled = false;
+      riskBtn.style.display = 'inline-flex';
+      riskConfirm.classList.remove('is-visible');
+    }
+    setRiskState('low');
+
+    qsaForEach(document.querySelectorAll('.risk-toggle__btn'), function(btn){
+      btn.addEventListener('click', function(){
+        qsaForEach(document.querySelectorAll('.risk-toggle__btn'), function(b){ b.classList.remove('is-active'); });
+        btn.classList.add('is-active');
+        setRiskState(btn.dataset.state);
+      });
+    });
+
+    riskBtn.addEventListener('click', function(){
+      riskBtn.style.display = 'none';
+      riskConfirm.classList.add('is-visible');
+    });
+  }
+
+  /* ============================= TESTIMONIAL CAROUSEL ============================= */
+  function initTestimonials(){
+    var testList = document.getElementById('testimonialList');
+    var testItems = testList.querySelectorAll('.testimonial');
+    var testDots = document.getElementById('testDots');
+    var testIndex = 0;
+
+    function goToTestimonial(i){
+      testIndex = (i + testItems.length) % testItems.length;
+      testList.style.transform = 'translateX(-' + (testIndex * 100) + '%)';
+      qsaForEach(testDots.querySelectorAll('.carousel-dot'), function(d, idx){
+        d.classList.toggle('is-active', idx === testIndex);
+      });
+    }
+
+    qsaForEach(testItems, function(_, i){
+      var dot = document.createElement('button');
+      dot.className = 'carousel-dot' + (i === 0 ? ' is-active' : '');
+      dot.setAttribute('aria-label', 'Go to story ' + (i+1));
+      dot.addEventListener('click', function(){ goToTestimonial(i); });
+      testDots.appendChild(dot);
+    });
+
+    document.getElementById('prevTest').addEventListener('click', function(){ goToTestimonial(testIndex - 1); });
+    document.getElementById('nextTest').addEventListener('click', function(){ goToTestimonial(testIndex + 1); });
+  }
+
+  /* ============================= CTA FORM ============================= */
+  function initCtaForm(){
+    var ctaForm = document.getElementById('ctaForm');
+    var ctaEmail = document.getElementById('ctaEmail');
+    var ctaError = document.getElementById('ctaError');
+    var ctaSuccess = document.getElementById('ctaSuccess');
+
+    ctaForm.addEventListener('submit', function(e){
+      e.preventDefault();
+      var value = ctaEmail.value.trim();
+      var isValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+      if (!isValid){
+        ctaError.classList.add('is-visible');
+        ctaEmail.focus();
+        return;
+      }
+      ctaError.classList.remove('is-visible');
+      ctaForm.style.display = 'none';
+      ctaSuccess.textContent = 'Check your inbox — we just sent next steps to ' + value + '.';
+      ctaSuccess.classList.add('is-visible');
+      ctaSuccess.focus();
+    });
+  }
+
+  /* ============================= INIT ============================= */
+  safe('nav', initNav);
+  safe('counters', initCounters);
+  safe('hero schedule', initHeroSchedule);
+  safe('jobs', initJobs);
+  safe('aid', initAid);
+  safe('support', initSupport);
+  safe('testimonials', initTestimonials);
+  safe('cta form', initCtaForm);
+
+})();
+</script>
+</body>
+</html>
