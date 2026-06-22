@@ -672,6 +672,38 @@ h1, h2, h3  { line-height: 1.2; font-weight: 800; }
   .passos  { grid-template-columns: 1fr; }
   .rodape-cols { grid-template-columns: 1fr; }
   .hero h1 { font-size: 1.8rem; }
+
+  .navbar-inner {
+    flex-direction: column; /* Faz o topo se ajustar em linhas no celular */
+    gap: 12px;
+    padding: 12px 0;
+    text-align: center;
+  }
+
+  .nav-direita {
+    width: 100%;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  /* Deixa os botões mais compactos e proporcionais no celular */
+  .btn-entrar, .btn-cadastrar {
+    padding: 6px 12px;
+    font-size: .78rem;
+    flex: 1; /* Faz os dois botões dividirem o espaço igualmente */
+    text-align: center;
+  }
+  
+  .hero-acoes {
+    flex-direction: column; /* Empilha os botões do Hero para não esmagar */
+    width: 100%;
+    padding: 0 10px;
+  }
+  
+  .btn-principal, .btn-secundario-h {
+    width: 100%;
+    text-align: center;
+  }
 }
 </style>
 </head>
