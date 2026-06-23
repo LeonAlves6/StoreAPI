@@ -21,14 +21,14 @@
 }
 
 @font-face {
-    font-family: Roboto;
+    font-family: 'Roboto';
     src: url('../fonts/Roboto-Bold.ttf') format('truetype');
     font-weight: bold;
     font-style: normal;
 }
 
 @font-face {
-    font-family: Lato;
+    font-family: 'Lato';
     src: url('../fonts/Lato-Regular.ttf');
     font-weight: normal;
     font-style: normal;
@@ -113,8 +113,12 @@ header {
 
 /* MAIN */
 main {
-    background: linear-gradient(to right, rgba(245, 245, 245, 0.8), rgba(245, 245, 245, 0.8)) center center, url(../images/back.svg);
-    padding: 4em 0.5em 3em 0.5em; /* compensação do header + espaçamento lateral */
+    background: linear-gradient(to right, rgba(245, 245, 245, 0.8), rgba(245, 245, 245, 0.8)), url('../images/back.svg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    padding: 4em 0.5em 3em 0.5em;
+    min-height: 500px;
 }
 
 .apresentacao {
