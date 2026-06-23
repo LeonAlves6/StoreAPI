@@ -1,0 +1,142 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Leonardo Alves | Desenvolvedor Web</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="{% static 'assets/css/style.css' %}">
+    <link rel="icon" href="{% static 'assets/images/La.png' %}">
+</head>
+<body>
+    <header>
+        <figure class="logo">
+            <a href="#">
+                <img src="{% static 'assets/images/La.png' %}">
+            </a>
+            <label class="logo-sub">Leonardo Alves</label>
+        </figure>
+        <nav class="menu-area">
+            <img id="menu-button" src="{% static 'assets/images/MenuAlt.png' %}">
+            <div class="main-menu">
+                <ul id="main-menu">
+                    <li>Home</li>
+                    <li>Sobre Mim</li>
+                    <li>Projetos</li>
+                    <li>Contato</li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+    <main class="apresentacao">
+        <div class="titulo">
+            <div class="foto">
+                <img src="{% static 'assets/images/background.png' %}">
+            </div>
+            <h1 class="main-title">Olá, meu nome é Leonardo Alves.<h1>
+            <h2 class="sub-title">Desenvolvedor fullstack</h2>
+        </div>
+        <a href="#" class="botao-primario">Baixar curriculo</a>
+    </main>
+    <section id="sobre-section" class="sobre-mim">
+        <div class="sobre">
+            <div class="main-title">Sobre mim</div>
+            <div class="sublinha"></div>
+            <p id="sobre-texto" class="sub-title">Sou desenvolvedor fullstack, com experiência na criação de aplicações modernas, escaláveis e responsivas. Tenho domínio em conceitos como mobile-first, boas práticas de UI/UX e integração entre front-end e back-end.<br><br>
+
+                Meu diferencial está na rapidez de aprendizado e na capacidade de transformar ideias em soluções funcionais, mantendo sempre atenção à performance, acessibilidade e usabilidade.<br><br>
+
+                Atualmente, busco oportunidades para aplicar minhas habilidades em projetos desafiadores, contribuindo para o crescimento da equipe e entregando resultados reais para o negócio.</p>
+            <div id="botao-email" class="botao-primario">Contate-me</div>
+        </div>
+        <div class="container-box">
+            <h2 id="minhas-habilidades">Minhas Habilidades</h2>
+            <div class="container-habilidades">
+                <div class="habilidade">HTML</div>
+                <div class="habilidade">CSS</div>
+                <div class="habilidade">Javascript</div>
+                <div class="habilidade">PHP</div>
+                <div class="habilidade">Laravel</div>
+                <div class="habilidade">Node</div>
+                <div class="habilidade">Python</div>
+                <div class="habilidade">MySQL</div>
+                <div class="habilidade">PostgreSQL</div>
+                <div class="habilidade">MVC</div>
+                <div class="habilidade">Design Responsivo</div>
+            </div>
+        </div>
+    </section>
+    <section class="projetos">
+        <div class="projetos-titulo">
+            <h1 class="main-title">Projetos</h1>
+            <div class="sublinha"></div>
+            <h2 id="projetos-sub-title" class="sub-title">Esta sessão contém meus projetos profissionais e pessoais de estudo. Em cada projeto um link para o seu repositório no Github</h2>
+        </div>
+        <div class="projetos-container">
+            <div class="projeto">
+                <img src="{% static 'assets/images/dopefolio.jpeg' %}" alt="Dopefolio" class="projeto-imagem">
+                <h2 class="projeto-titulo">Portfólio</h2>
+                <h2 class="sub-title projeto-sub-title">Projeto simples, mas feito em laravel. Aqui nessa pagina utilizo minhas habilidades no frontend com responsividade. No backend uso banco de dados para fazer atualizações.</h2>
+                <a href="#" class="botao-primario">Link Github</a>
+            </div>
+            <div class="projeto">
+                <img src="{% static 'assets/images/dopefolio.jpeg' %}" alt="Dopefolio" class="projeto-imagem">
+                <h2 class="projeto-titulo">Portfólio</h2>
+                <h2 class="sub-title projeto-sub-title">Projeto simples, mas feito em laravel. Aqui nessa pagina utilizo minhas habilidades no frontend com responsividade. No backend uso banco de dados para fazer atualizações.</h2>
+                <a href="#" class="botao-primario">Link Github</a>
+            </div>
+            <div class="projeto">
+                <img src="{% static 'assets/images/dopefolio.jpeg' %}" alt="Dopefolio" class="projeto-imagem">
+                <h2 class="projeto-titulo">Portfólio</h2>
+                <h2 class="sub-title projeto-sub-title">Projeto simples, mas feito em laravel. Aqui nessa pagina utilizo minhas habilidades no frontend com responsividade. No backend uso banco de dados para fazer atualizações.</h2>
+                <a href="#" class="botao-primario">Link Github</a>
+            </div>
+            <div class="projeto">
+                <img src="{% static 'assets/images/dopefolio.jpeg' %}" alt="Dopefolio" class="projeto-imagem">
+                <h2 class="projeto-titulo">Portfólio</h2>
+                <h2 class="sub-title projeto-sub-title">Projeto simples, mas feito em laravel. Aqui nessa pagina utilizo minhas habilidades no frontend com responsividade. No backend uso banco de dados para fazer atualizações.</h2>
+                <a href="#" class="botao-primario">Link Github</a>
+            </div>
+        </div>
+    </section>
+    <section class="contato">
+        <h1 class="main-title">Contatos</h1>
+        <div class="sublinha"></div>
+        <h2 id="contato-sub-titulo" class="sub-title">Meu email e Whatsapp. Responderei o mais rápido possível</h2>
+        <div class="contato-container">
+            <div class="whats-container">
+                <a href="https://wa.me/5584987657567">
+                <img src="{% static 'assets/images/whats.png' %}" alt="Logo-whatsapp">
+                <h4>Fale diretamente comigo</h4>
+                </a>
+            </div>
+            <div class="email-container">
+                <div class="email-box">
+                    <h4>leonardoalvesaraujo@hotmail.com</h4>
+                </div>
+            </div>
+        </div>
+    </section>
+    <footer>
+        <div class="social-container">
+            <h4>SOCIAL</h4>
+            <div class="social-icons">
+                <a href="https://www.instagram.com/leonardo.alves.1671897"><img src="{% static 'assets/images/insta.png' %}" alt="Instagram_icon"></a>
+                <a href="https://github.com/LeonardoMartell"><img src="{% static 'assets/images/github.png' %}" alt="Github_icon"></a>
+                <a href="https://www.linkedin.com/in/leonalv"><img src="{% static 'assets/images/linkedin.png' %}" alt="Linkedin_icon"></a>
+            </div>
+        </div>
+        <div class="footer-info">
+            <h4>Leonardo Alves</h4>
+            <div class="footer-sub-title">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent faucibus laoreet leo, ac scelerisque diam placerat at. Quisque id condimentum ligula, in maximus ligula. Phasellus iaculis semper rutrum. Vivamus ligula arcu, malesuada varius laoreet in, sagittis sollicitudin turpis.</div>
+            <div class="footer-sublinha"></div>
+        </div>
+        <div class="copyright">
+            <div id="copyright" class="footer-sub-title">©Copyright 2025. Por Leonardo Alves</div>
+        </div>
+    </footer>
+
+    <script src="{% static 'assets/js/script.js' %}"></script>
+</body>
+</html>
